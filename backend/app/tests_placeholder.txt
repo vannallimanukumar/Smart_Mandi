@@ -1,0 +1,8 @@
+Add pytest tests before pilot launch. Minimum tests:
+- public market endpoints work without auth
+- bookings and offers reject unauthenticated requests
+- a farmer cannot access admin routes
+- farmer-facing truck responses never contain contact_phone
+- invalid crop/market/truck IDs are rejected
+- capacity and quantity constraints are enforced
+- demo data remains marked is_demo=true
