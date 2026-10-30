@@ -1,0 +1,1938 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Smart Mandi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Lora:wght@600;700&family=Noto+Sans+Telugu:wght@400;700&family=Noto+Serif+Telugu:wght@600;700&display=swap">
+<style>
+/* Layout concept: a left rail holds the farmer's load (crop, quintals, district); the right side switches between compare, trucks, buyers and sowing advice. Phone width stacks the rail above the views. */
+:root {
+  --bg: #F2F6EF;
+  --surface: #FFFFFF;
+  --tint: #E8F1E5;
+  --line: #D0DFCB;
+  --ink: #15291B;
+  --muted: #4F6558;
+  --brand: #17532F;
+  --on-brand: #FFFFFF;
+  --primary: #1F6B3A;
+  --on-primary: #FFFFFF;
+  --accent: #F0A93B;
+  --on-accent: #2B1D00;
+  --good: #2E7D32;
+  --good-bg: #DDEEDB;
+  --warn: #D9481F;
+  --warn-bg: #FCE8E1;
+  --focus: #1A5FB4;
+  --scrim: rgba(8, 20, 12, 0.6);
+  --font-display: "Lora", "Noto Serif Telugu", Georgia, serif;
+  --font-body: "Lato", "Noto Sans Telugu", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1810; --surface: #15241A; --tint: #1B2F22; --line: #2A4332;
+    --ink: #E7F1E8; --muted: #A3BCAA; --brand: #0F3A22; --on-brand: #FFFFFF;
+    --primary: #4FA864; --on-primary: #07180C; --accent: #F0A93B; --on-accent: #2B1D00;
+    --good: #5DBB63; --good-bg: #1F3A26; --warn: #FF8F6B; --warn-bg: #3A1F16; --focus: #7DB4FF;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1810; --surface: #15241A; --tint: #1B2F22; --line: #2A4332;
+  --ink: #E7F1E8; --muted: #A3BCAA; --brand: #0F3A22; --on-brand: #FFFFFF;
+  --primary: #4FA864; --on-primary: #07180C; --accent: #F0A93B; --on-accent: #2B1D00;
+  --good: #5DBB63; --good-bg: #1F3A26; --warn: #FF8F6B; --warn-bg: #3A1F16; --focus: #7DB4FF;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding-block: 0; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.2; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Header band */
+.band { background: var(--brand); color: var(--on-brand); }
+.band-in { max-width: 1040px; margin: 0 auto; padding-block: 14px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.logo { flex: none; width: 40px; height: 40px; border-radius: 50%; background: #2E7D32; display: grid; place-items: center; color: #fff; }
+.brand h1 { font-size: 22px; font-weight: 700; }
+.brand p { font-size: 13px; opacity: .9; }
+.band-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sample { font-size: 12px; font-weight: 700; letter-spacing: .02em; padding: 4px 10px; border-radius: 999px; background: var(--accent); color: var(--on-accent); }
+.seg { display: inline-flex; border: 1px solid rgba(255,255,255,.5); border-radius: 999px; overflow: hidden; }
+.seg button { background: transparent; border: 0; color: var(--on-brand); padding: 6px 14px; font-weight: 700; font-size: 13px; }
+.seg button[aria-pressed="true"] { background: #fff; color: #17532F; }
+
+/* Page grid */
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 18px 28px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+@media (min-width: 860px) { .wrap { grid-template-columns: 320px minmax(0, 1fr); align-items: start; } .rail { position: sticky; top: 16px; } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.rail { display: grid; gap: 14px; min-width: 0; }
+.label { display: block; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.field { min-width: 0; }
+
+.search { display: flex; gap: 8px; }
+.search input { flex: 1; min-width: 0; }
+input[type="text"], input[type="number"], select { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-height: 44px; }
+.icon-btn { flex: none; width: 44px; min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--tint); display: grid; place-items: center; color: var(--ink); }
+.icon-btn.live { background: var(--warn); color: #fff; border-color: var(--warn); }
+.status { font-size: 13px; color: var(--muted); min-height: 20px; margin-top: 6px; }
+
+.chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.chip { position: relative; text-align: center; min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); padding: 6px 4px; display: flex; align-items: center; justify-content: center; line-height: 1.2; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+.chip .dot { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.legend-pilot { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+.legend-pilot i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; }
+.qhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.qhead .label { margin: 0; }
+.seg.alt { border-color: var(--line); }
+.seg.alt button { color: var(--ink); padding: 4px 10px; font-size: 12px; }
+.seg.alt button[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); }
+
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 420px) and (max-width: 859px) { .row2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.stepper { display: flex; gap: 6px; }
+.stepper button { flex: none; width: 44px; min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--tint); font-size: 20px; font-weight: 700; }
+.stepper input { text-align: center; font-weight: 700; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.check input { flex: none; width: 22px; height: 22px; margin-top: 1px; accent-color: var(--primary); }
+.note { font-size: 13px; color: var(--muted); }
+
+/* Rates under the crop chips */
+.rates { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.rates .label { margin-bottom: 8px; }
+.rate-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 10px; }
+.rate-sum > div { min-width: 0; padding: 8px; border-radius: 10px; border: 1px solid var(--line); background: var(--tint); }
+.rate-sum .k { display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.rate-sum b { display: block; font-family: var(--font-display); font-size: 17px; margin-top: 2px; }
+.rate-sum .m { display: block; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; line-height: 1.25; }
+.rate-sum .hi b { color: var(--good); }
+.rate-sum .lo b { color: var(--warn); }
+.rate-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.rate-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); min-width: 0; }
+.rate-row > div { min-width: 0; }
+.rate-row b { display: block; font-size: 14px; }
+.rate-row .small { display: block; font-size: 12px; }
+.rate-row.top { border-color: var(--accent); border-width: 2px; }
+.rate-val { text-align: right; flex: none; }
+.rate-val b { font-family: var(--font-display); font-size: 18px; }
+
+button.rate-row { width: 100%; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.rate-row .car { flex: none; color: var(--muted); }
+.rate-row[aria-expanded="true"] .car { transform: rotate(180deg); }
+.rate-list > li { display: grid; gap: 6px; }
+.mkt-detail { padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.rng { position: relative; height: 6px; border-radius: 3px; margin: 14px 7px 10px; background: var(--line); }
+.rng i { position: absolute; top: -4px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--primary); border: 2px solid var(--surface); }
+
+/* Sign in */
+.signin { min-height: 36px; padding: 6px 14px; border-radius: 999px; border: 0; background: #fff; color: #17532F; font-weight: 700; font-size: 13px; }
+.who { font-size: 13px; font-weight: 700; color: var(--on-brand); overflow-wrap: anywhere; }
+.auth { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.auth .signin.out { background: transparent; color: var(--on-brand); border: 1px solid rgba(255,255,255,.5); }
+.modal { position: fixed; inset: 0; z-index: 50; background: var(--scrim); display: grid; place-items: center; overflow-y: auto;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.modal[hidden] { display: none; }
+a.btn { text-decoration: none; }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.sheet { position: relative; width: 100%; max-width: 420px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: grid; gap: 14px; }
+.sheet h2 { font-size: 22px; padding-right: 48px; }
+.sheet .x { position: absolute; top: 10px; right: 10px; width: 44px; min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--tint); font-size: 22px; line-height: 1; }
+.pfx { display: flex; gap: 8px; }
+.pfx .cc { flex: none; display: grid; place-items: center; min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--tint); font-weight: 700; }
+.otp-input { text-align: center; font-size: 26px; letter-spacing: 0.35em; font-weight: 900; }
+.demo-code { background: var(--tint); border: 1px dashed var(--line); border-radius: 10px; padding: 10px 12px; font-size: 14px; display: grid; gap: 2px; }
+.demo-code b { font-family: var(--font-display); font-size: 22px; letter-spacing: 0.2em; }
+.err { color: var(--warn); font-weight: 700; font-size: 14px; }
+.sent { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 14px; }
+.linkbtn { background: none; border: 0; padding: 4px 0; min-height: 44px; color: var(--primary); font-weight: 700; text-decoration: underline; }
+
+/* Developer panel: live API calls */
+.dev { grid-column: 1 / -1; min-width: 0; border: 1px solid var(--line); border-radius: 12px; padding: 0 14px; background: var(--surface); }
+.dev > summary { min-height: 44px; display: flex; align-items: center; font-weight: 700; cursor: pointer; }
+.dev .body { display: grid; gap: 10px; padding-bottom: 14px; font-size: 14px; }
+.dev ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.dev li summary { cursor: pointer; overflow-wrap: anywhere; font-size: 13px; }
+.dev code, .dev pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+.dev pre { margin: 6px 0 0; padding: 8px; background: var(--tint); border-radius: 8px; overflow-x: auto; max-height: 240px; }
+
+/* How to read the Compare tab */
+.how { background: var(--tint); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; }
+.how summary { min-height: 44px; display: flex; align-items: center; font-weight: 700; cursor: pointer; }
+.how[open] summary { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+.how .body { display: grid; gap: 10px; padding-bottom: 14px; font-size: 14px; }
+.how .formula { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+.how ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.how .ex { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 4px; }
+.how .ex p { overflow-wrap: anywhere; }
+
+/* Tabs */
+.main { min-width: 0; display: grid; gap: 14px; }
+.tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.tab { flex: 1 0 auto; min-height: 44px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; font-size: 14px; white-space: nowrap; }
+.tab[aria-selected="true"] { background: var(--brand); color: var(--on-brand); border-color: var(--brand); }
+.view { display: grid; gap: 14px; min-width: 0; }
+
+/* Hero result */
+.hero { background: var(--brand); color: var(--on-brand); border-radius: 14px; padding: 18px; border: 1px solid var(--brand); }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.hero h2 { font-size: 24px; margin-top: 4px; }
+.hero .big { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-top: 10px; }
+.hero .big b { font-family: var(--font-display); font-size: 40px; line-height: 1; color: var(--accent); }
+.hero .big span { font-size: 14px; opacity: .92; }
+.hero .delta { margin-top: 10px; font-size: 15px; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.mk { display: grid; gap: 10px; min-width: 0; }
+.mk-head { display: flex; gap: 10px; align-items: flex-start; }
+.rank { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--tint); display: grid; place-items: center; font-weight: 900; font-size: 14px; }
+.mk.best .rank { background: var(--accent); color: var(--on-accent); }
+.mk.best { border-color: var(--good); border-width: 2px; }
+.mk-title { min-width: 0; flex: 1; }
+.mk-title h3 { font-size: 17px; }
+.mk-meta { font-size: 13px; color: var(--muted); }
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.badge { font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--tint); }
+.badge.best { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.badge.high { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+.bar { height: 12px; border-radius: 6px; background: var(--tint); overflow: hidden; display: flex; }
+.bar i { display: block; height: 100%; }
+.bar .n { background: var(--good); }
+.bar .f { background: var(--warn); }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin: 0; }
+@media (min-width: 560px) { .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.stats dt { font-size: 12px; color: var(--muted); }
+.stats dd { margin: 0; font-weight: 700; font-size: 16px; }
+.stats .net dd { color: var(--good); font-size: 18px; }
+.btn { min-height: 44px; border-radius: 10px; border: 0; background: var(--primary); color: var(--on-primary); font-weight: 700; padding: 10px 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.mk-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; justify-content: space-between; }
+.small { font-size: 13px; color: var(--muted); }
+
+/* Trucks */
+.route { display: grid; gap: 12px; }
+.route-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.route-line b { font-family: var(--font-display); font-size: 17px; }
+.arrow { color: var(--muted); }
+.tk { display: grid; gap: 10px; cursor: pointer; }
+.tk[aria-checked="true"] { border: 2px solid var(--primary); }
+.tk[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
+.tk-head { display: flex; gap: 10px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
+.tk h3 { font-size: 16px; }
+.ver { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--good); font-weight: 700; }
+.price { text-align: right; }
+.price b { display: block; font-size: 20px; font-family: var(--font-display); }
+.confirm { display: grid; gap: 12px; }
+.phone { font-weight: 900; letter-spacing: .04em; user-select: all; }
+.ok { border: 2px solid var(--good); background: var(--good-bg); border-radius: 14px; padding: 16px; display: grid; gap: 10px; }
+.ok h2 { font-size: 20px; display: flex; gap: 8px; align-items: center; }
+.kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; margin: 0; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-weight: 700; text-align: right; }
+
+/* Buyers */
+.subtabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.subtab { min-height: 40px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; font-size: 14px; }
+.subtab[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.by { display: grid; gap: 8px; }
+.by-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+.by h3 { font-size: 16px; }
+.plus { color: var(--good); font-weight: 700; font-size: 14px; }
+.empty { border: 1px dashed var(--line); border-radius: 14px; padding: 20px; color: var(--muted); text-align: center; }
+
+/* Advice */
+.rec { background: var(--tint); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 6px; }
+.rec h2 { font-size: 22px; }
+.mbar { display: grid; grid-template-columns: 92px minmax(0, 1fr) 44px; align-items: center; gap: 10px; font-size: 14px; }
+.mbar .track { height: 18px; border-radius: 4px; background: var(--tint); overflow: hidden; }
+.mbar .track i { display: block; height: 100%; background: var(--good); border-radius: 4px; }
+.mbar.top .track i { background: var(--accent); }
+.mbar b { text-align: right; }
+.crop-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; padding-block: 10px; border-top: 1px solid var(--line); }
+.crop-row:first-child { border-top: 0; }
+.crop-row .nm { font-weight: 700; }
+.risk { font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
+.risk.low { background: var(--good-bg); color: var(--good); }
+.risk.med { background: var(--tint); color: var(--ink); border: 1px solid var(--line); }
+.risk.high { background: var(--warn-bg); color: var(--warn); }
+.callout { background: var(--brand); color: var(--on-brand); border-radius: 14px; padding: 16px; font-size: 15px; border: 1px solid var(--brand); }
+.callout b { color: var(--accent); }
+
+/* Footer */
+.foot { border-top: 1px solid var(--line); }
+.foot-in { max-width: 1040px; margin: 0 auto; padding-block: 22px 32px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .foot-in { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.foot h2 { font-size: 17px; margin-bottom: 8px; }
+.foot ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
+.foot .team { grid-column: 1 / -1; font-size: 13px; color: var(--muted); }
+
+#chips { max-height: 320px; overflow-y: auto; padding: 2px; }
+/* Location, colonies, owner panel */
+.mapframe { width: 100%; height: 320px; border: 1px solid var(--line); border-radius: 14px; background: var(--tint); display: block; }
+.sheet.wide { max-width: 640px; }
+.ownerlink { background: none; border: 0; padding: 0 4px; min-height: 44px; color: var(--muted); text-decoration: underline; font-size: 13px; }
+.privnote { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--ink); background: var(--tint); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.privnote svg { flex: none; margin-top: 2px; color: var(--good); }
+.adm-sec { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.adm-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.adm-row .pfx input { min-width: 0; }
+.adm-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+@media (min-width: 520px) { .adm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.chips.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 520px) { .chips.two { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+@media (prefers-reduced-motion: no-preference) { .bar i { transition: width .35s ease; } }
+</style>
+
+<header class="band">
+  <div class="band-in">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-8"/><path d="M12 13c0-4-3-6-7-6 0 4 3 6 7 6z"/><path d="M12 11c0-3 2-5 6-5 0 3-2 5-6 5z"/></svg></div>
+      <div>
+        <h1 data-i18n="appName">Smart Mandi</h1>
+        <p data-i18n="tagline">Fair prices for every farmer</p>
+      </div>
+    </div>
+    <div class="band-right">
+      <span class="sample" data-i18n="sampleBadge">Indicative rates · 29 Oct 2026</span>
+      <div class="auth" id="authBox"></div>
+      <div class="seg" role="group" aria-label="Language">
+        <button type="button" data-act="lang" data-v="en" aria-pressed="true">EN</button>
+        <button type="button" data-act="lang" data-v="te" aria-pressed="false">తెలుగు</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <aside class="rail">
+    <section class="card" aria-labelledby="loadH">
+      <h2 id="loadH" class="label" data-i18n="yourLoad">Your load</h2>
+
+      <div class="field" style="margin-bottom:14px">
+        <span class="label" data-i18n="district">Your district</span>
+        <div class="chips" id="dists" role="group" aria-label="District"></div>
+      </div>
+
+      <div class="field" style="margin-bottom:14px">
+        <label class="label" for="village" data-i18n="village">Your village</label>
+        <div class="search">
+          <input type="text" id="village" maxlength="60" autocomplete="off" data-i18n-ph="villagePh" placeholder="Village or mandal name">
+          <button type="button" class="icon-btn" data-act="gps" data-i18n-aria="useGps" aria-label="Use my phone location">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+          </button>
+        </div>
+        <p class="status" id="gstatus" role="status" aria-live="polite"></p>
+        <p class="note" style="margin-top:6px" data-i18n="villageHint">Used to open Google Maps directions.</p>
+      </div>
+
+      <div class="field">
+        <label class="label" for="q" data-i18n="searchLbl">Find a crop</label>
+        <div class="search">
+          <input type="text" id="q" autocomplete="off" data-i18n-ph="searchPh" placeholder="Type or speak a crop name">
+          <button type="button" class="icon-btn" id="mic" data-act="mic" data-i18n-aria="voice" aria-label="Voice search">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          </button>
+        </div>
+        <p class="status" id="vstatus" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="field" style="margin-top:8px">
+        <span class="label" id="cropsLabel"></span>
+        <div class="chips two" id="cats" role="group" aria-label="Category" style="margin-bottom:8px"></div>
+        <div class="chips" id="chips"></div>
+        
+      </div>
+
+      <div id="rates" class="rates" aria-live="polite"></div>
+
+      <div style="margin-top:14px">
+        <div class="field">
+          <div class="qhead">
+            <label class="label" for="qty" data-i18n="qty">Quantity</label>
+            <div class="seg alt" role="group" aria-label="Unit">
+              <button type="button" data-act="unit" data-v="q" aria-pressed="true" data-i18n="unitQ">Quintal</button>
+              <button type="button" data-act="unit" data-v="kg" aria-pressed="false" data-i18n="unitKg">Kg</button>
+            </div>
+          </div>
+          <div class="stepper">
+            <button type="button" data-act="qminus" aria-label="−">−</button>
+            <input type="number" id="qty" inputmode="decimal" step="any" value="10">
+            <button type="button" data-act="qplus" aria-label="+">+</button>
+          </div>
+        </div>
+      </div>
+
+      <label class="check" style="margin-top:14px">
+        <input type="checkbox" id="share">
+        <span data-i18n="share">Share the truck with a neighbour and split the freight</span>
+      </label>
+      
+    </section>
+  </aside>
+
+  <section class="main" id="tabs">
+    <div class="tabs" role="tablist" id="tablist"></div>
+    <div class="view" id="view" role="tabpanel"></div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot-in">
+    <section>
+      <h2 data-i18n="dataTitle">Where the data comes from</h2>
+      <ul>
+        <li data-i18n="d1">Mandi prices: public data from Agmarknet and e-NAM</li>
+        <li data-i18n="d2">Truck rates: quoted by verified owners on the site</li>
+        <li data-i18n="d3">Local gaps: field volunteers record rates at small yards</li>
+        <li data-i18n="d4">Acreage and history: official district reports and past price series</li>
+      </ul>
+    </section>
+    <section>
+      <h2 data-i18n="aboutTitle">About Smart Mandi</h2>
+      <ul>
+        <li data-i18n="a1">Working now: net-profit math, truck booking flow, Telugu.</li>
+        <li data-i18n="a2">Sample for the demo: prices, distances, trucks, buyers.</li>
+        <li data-i18n="a3">Next: live Agmarknet and e-NAM feed, real bookings, UPI payments.</li>
+      </ul>
+    </section>
+    <p class="team"><span data-i18n="team">Team Rohit · Fair Prices for Every Farmer</span> <button type="button" class="ownerlink" data-act="admin-open" lang="en">Owner login</button></p>
+  </div>
+</footer>
+
+<div id="login" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <div class="sheet">
+    <button type="button" class="x" data-act="login-close" data-i18n-aria="close" aria-label="Close">×</button>
+    <h2 id="loginTitle"></h2>
+    <div class="seg alt" role="group" aria-label="Language" style="justify-self:start">
+      <button type="button" data-act="lang" data-v="en" aria-pressed="true">EN</button>
+      <button type="button" data-act="lang" data-v="te" aria-pressed="false">తెలుగు</button>
+    </div>
+    <div id="loginBody" style="display:grid;gap:14px"></div>
+  </div>
+</div>
+
+<div id="admin" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="adminTitle" lang="en">
+  <div class="sheet wide">
+    <button type="button" class="x" data-act="admin-close" aria-label="Close">×</button>
+    <h2 id="adminTitle">Owner panel</h2>
+    <div id="adminBody" style="display:grid;gap:14px"></div>
+  </div>
+</div>
+
+<script>
+/*LOGIC*/
+var MARKETS = ['mad', 'ana', 'hin', 'vil'];
+var RATES = {
+  tomato:      { mad: 1850,  ana: 1700,  hin: 1550,  vil: 1250 },
+  groundnut:   { mad: 6400,  ana: 6700,  hin: 6550,  vil: 5900 },
+  banana:      { mad: 2400,  ana: 2250,  hin: 2150,  vil: 1700 },
+  chilli:      { mad: 11800, ana: 11200, hin: 10800, vil: 9800 },
+  ragi:        { mad: 3900,  ana: 4100,  hin: 4000,  vil: 3600 },
+  sweetpotato: { mad: 2600,  ana: 2500,  hin: 2400,  vil: 2000 },
+  orange:      { mad: 4200,  ana: 4500,  hin: 4000,  vil: 3300 },
+  sugarcane:   { mad: 345,   ana: 350,   hin: 340,   vil: 310 },
+  pulses:      { mad: 7200,  ana: 7500,  hin: 7350,  vil: 6800 },
+  leafy:       { mad: 2200,  ana: 2000,  hin: 1900,  vil: 1500 },
+  brinjal:     { mad: 2400,  ana: 2200,  hin: 2100,  vil: 1700 },
+  tobacco:     { mad: 14500, ana: 14200, hin: 13800, vil: 12800 }
+};
+/* freight multiplier by crop: sugarcane moves in bulk haulage, so it costs less per quintal (sample) */
+var FF = { sugarcane: 0.3 };
+/* km and freight for a 10-quintal load from the example village in each district (sample) */
+var ROUTES = {
+  annamayya:   { mad: [52, 4100],  ana: [22, 1200], hin: [28, 1000],  vil: [2, 200] },
+  anantapuram: { mad: [140, 9800], ana: [12, 800],  hin: [105, 7400], vil: [2, 200] },
+  sathyasai:   { mad: [95, 6200],  ana: [70, 4300], hin: [15, 900],   vil: [3, 200] }
+};
+var MARGIN = { tomato: 38, tobacco: 33, chilli: 31, brinjal: 30, orange: 29, leafy: 27, banana: 26, sweetpotato: 24, groundnut: 22, sugarcane: 20, pulses: 18, ragi: 14 };
+var STABILITY = { tomato: 35, tobacco: 70, chilli: 55, brinjal: 45, orange: 60, leafy: 40, banana: 70, sweetpotato: 65, groundnut: 60, sugarcane: 90, pulses: 75, ragi: 85 };
+var GLUT = {
+  annamayya:   { tomato: 80, tobacco: 10, chilli: 35, brinjal: 50, orange: 25, leafy: 45, banana: 30, sweetpotato: 20, groundnut: 40, sugarcane: 15, pulses: 20, ragi: 10 },
+  anantapuram: { tomato: 45, tobacco: 60, chilli: 50, brinjal: 30, orange: 55, leafy: 35, banana: 25, sweetpotato: 15, groundnut: 70, sugarcane: 20, pulses: 40, ragi: 15 },
+  sathyasai:   { tomato: 55, tobacco: 20, chilli: 30, brinjal: 45, orange: 30, leafy: 40, banana: 35, sweetpotato: 25, groundnut: 50, sugarcane: 10, pulses: 30, ragi: 20 }
+};
+var TRUCKS = {
+  annamayya: [
+    { id: 'a1', name: ['Ravi K.', 'రవి కె.'], veh: ['Tata Ace', 'టాటా ఏస్'], cap: 10, km: 2.1, f: 1.0 },
+    { id: 'a2', name: ['Subba Rao', 'సుబ్బారావు'], veh: ['Bolero Pickup', 'బొలేరో పికప్'], cap: 15, km: 4.6, f: 0.95 },
+    { id: 'a3', name: ['Narayana', 'నారాయణ'], veh: ['Eicher', 'ఐషర్'], cap: 40, km: 8.3, f: 0.88 }
+  ],
+  anantapuram: [
+    { id: 'b1', name: ['Mahesh', 'మహేష్'], veh: ['Tata Ace', 'టాటా ఏస్'], cap: 10, km: 1.8, f: 1.0 },
+    { id: 'b2', name: ['Imran', 'ఇమ్రాన్'], veh: ['Bolero Pickup', 'బొలేరో పికప్'], cap: 15, km: 5.2, f: 0.96 },
+    { id: 'b3', name: ['Gopal', 'గోపాల్'], veh: ['Eicher', 'ఐషర్'], cap: 40, km: 9.1, f: 0.9 }
+  ],
+  sathyasai: [
+    { id: 'c1', name: ['Chandra', 'చంద్ర'], veh: ['Tata Ace', 'టాటా ఏస్'], cap: 10, km: 3.0, f: 1.0 },
+    { id: 'c2', name: ['Nagaraju', 'నాగరాజు'], veh: ['Bolero Pickup', 'బొలేరో పికప్'], cap: 15, km: 6.4, f: 0.94 },
+    { id: 'c3', name: ['Basha', 'బాషా'], veh: ['Eicher', 'ఐషర్'], cap: 40, km: 7.7, f: 0.9 }
+  ]
+};
+var DISTRICT_CROPS = {
+  annamayya:   ['tomato', 'groundnut', 'banana', 'orange', 'pulses'],
+  anantapuram: ['groundnut', 'tomato', 'chilli', 'orange', 'banana', 'pulses', 'ragi'],
+  sathyasai:   ['groundnut', 'tomato', 'orange', 'banana', 'pulses', 'sugarcane']
+};
+function r10(n) { return Math.round(n / 10) * 10; }
+function r5(n) { return Math.round(n / 5) * 5; }
+function compute(crop, district, qty, share) {
+  var ff = FF[crop] || 1;
+  var rows = MARKETS.map(function (m) {
+    var rate = RATES[crop][m];
+    var route = ROUTES[district][m];
+    var f10 = route[1] * ff;
+    var gross = Math.round(rate * qty);
+    var freight = r10(f10 * qty / 10);
+    if (share) freight = r10(freight / 2);
+    return { id: m, rate: rate, km: route[0], f10: f10, gross: gross, freight: freight, net: gross - freight };
+  });
+  rows.sort(function (a, b) { return b.net - a.net; });
+  var high = rows.reduce(function (a, b) { return b.rate > a.rate ? b : a; });
+  return { rows: rows, best: rows[0], high: high, delta: rows[0].net - high.net };
+}
+function truckQuotes(crop, district, destId, qty, share) {
+  var f10 = ROUTES[district][destId][1] * (FF[crop] || 1);
+  return TRUCKS[district].map(function (t) {
+    var perQ = r5(f10 / 10 * t.f);
+    var total = r10(perQ * qty);
+    if (share) total = r10(total / 2);
+    return { t: t, perQ: perQ, total: total, fits: t.cap >= qty };
+  });
+}
+function adviceScores(district) {
+  return Object.keys(MARGIN).filter(function (c) { return DISTRICT_CROPS[district].indexOf(c) >= 0; }).map(function (c) {
+    var score = 0.4 * (MARGIN[c] / 38 * 100) + 0.3 * STABILITY[c] + 0.3 * (100 - GLUT[district][c]);
+    return { crop: c, score: Math.round(score), margin: MARGIN[c], stab: STABILITY[c], glut: GLUT[district][c] };
+  }).sort(function (a, b) { return b.score - a.score; });
+}
+function priceRange(crop, m) {
+  var avg = RATES[crop][m];
+  var sp = (100 - STABILITY[crop]) / 100 * 0.35;
+  if (m === 'vil') sp = sp * 0.2;
+  var step = avg < 1000 ? 5 : 10;
+  return { hi: Math.round(avg * (1 + sp) / step) * step, avg: avg, lo: Math.round(avg * (1 - sp) / step) * step };
+}
+/*ENDLOGIC*/
+
+var NAMES = {
+  mad: ['Madanapalle Market', 'మదనపల్లె మార్కెట్'],
+  ana: ['Anantapur Wholesale Market', 'అనంతపురం హోల్‌సేల్ మార్కెట్'],
+  hin: ['Hindupur Market', 'హిందూపురం మార్కెట్'],
+  vil: ['Village trader', 'గ్రామ వ్యాపారి']
+};
+var STATUS = {
+  mad: ['Tier 1 · Active bidding', 'టైర్ 1 · చురుకైన వేలం'],
+  ana: ['Tier 2 · Steady demand', 'టైర్ 2 · స్థిరమైన డిమాండ్'],
+  hin: ['Sub-yard · Moderate volume', 'సబ్-యార్డ్ · మధ్యస్థ పరిమాణం'],
+  vil: ['Nearby · Fixed baseline', 'దగ్గర · స్థిర ధర']
+};
+var SOURCE = {
+  mad: ['Agmarknet', 'అగ్మార్క్‌నెట్'],
+  ana: ['e-NAM', 'e-NAM'],
+  hin: ['Field volunteer', 'క్షేత్ర వాలంటీర్'],
+  vil: ['Farmer report', 'రైతు నివేదిక']
+};
+var CROPS = {
+  tomato:      { n: ['Tomato', 'టమాటా'],             al: ['tomato', 'tomatoes', 'టమాటా', 'టమోటా', 'టొమాటో'] },
+  groundnut:   { n: ['Groundnut', 'వేరుశనగ'],       al: ['groundnut', 'peanut', 'వేరుశనగ', 'వేరుశెనగ'] },
+  banana:      { n: ['Banana', 'అరటి'],              al: ['banana', 'అరటి'] },
+  chilli:      { n: ['Chilli', 'మిరప'],              al: ['chilli', 'chili', 'mirchi', 'మిరప', 'మిర్చి'] },
+  ragi:        { n: ['Ragi', 'రాగులు'],              al: ['ragi', 'finger millet', 'రాగి', 'రాగులు'] },
+  sweetpotato: { n: ['Sweet potato', 'చిలగడదుంప'],   al: ['sweet potato', 'sweet potatoes', 'sweetpotato', 'చిలగడదుంప', 'గెనుసుగడ్డ'] },
+  orange:      { n: ['Sweet orange', 'బత్తాయి'],             al: ['orange', 'oranges', 'sweet orange', 'mosambi', 'నారింజ', 'బత్తాయి'] },
+  sugarcane:   { n: ['Sugarcane', 'చెరకు'],           al: ['sugarcane', 'sugar cane', 'చెరకు'] },
+  pulses:      { n: ['Pulses', 'పప్పుధాన్యాలు'],     al: ['pulses', 'dal', 'red gram', 'పప్పు', 'పప్పుధాన్యాలు', 'కందులు'] },
+  leafy:       { n: ['Leaf vegetables', 'ఆకుకూరలు'], al: ['leaf vegetables', 'leafy', 'leaf', 'greens', 'ఆకుకూరలు', 'ఆకు'] },
+  brinjal:     { n: ['Brinjal', 'వంకాయ'],            al: ['brinjal', 'eggplant', 'aubergine', 'వంకాయ'] },
+  tobacco:     { n: ['Tobacco', 'పొగాకు'],           al: ['tobacco', 'పొగాకు'] }
+};
+/*EXT*/
+/* ---- Full Andhra Pradesh crop and fruit list (indicative rates, Rs per quintal) ---- */
+var CAT = { tomato: 'veg', groundnut: 'oil', banana: 'fruit', chilli: 'cash', ragi: 'grain', sweetpotato: 'veg', orange: 'fruit', sugarcane: 'cash', pulses: 'pulses', leafy: 'veg', brinjal: 'veg', tobacco: 'cash' };
+var EXTRA = [
+  ['paddy', 'Paddy (rice)', 'వరి', ['paddy', 'rice', 'వరి', 'ధాన్యం'], 2300, 22, 80, 'grain'],
+  ['maize', 'Maize', 'మొక్కజొన్న', ['maize', 'corn', 'మొక్కజొన్న'], 2200, 20, 65, 'grain'],
+  ['jowar', 'Jowar (sorghum)', 'జొన్న', ['jowar', 'sorghum', 'జొన్న'], 3300, 16, 75, 'grain'],
+  ['bajra', 'Bajra (pearl millet)', 'సజ్జ', ['bajra', 'pearl millet', 'సజ్జ'], 2500, 15, 70, 'grain'],
+  ['redgram', 'Red gram (tur)', 'కంది', ['tur', 'toor', 'arhar', 'కంది'], 7500, 21, 72, 'pulses'],
+  ['greengram', 'Green gram', 'పెసర', ['greengram', 'green gram', 'moong', 'mung', 'పెసర', 'పెసలు'], 8500, 22, 70, 'pulses'],
+  ['blackgram', 'Black gram', 'మినుము', ['blackgram', 'black gram', 'urad', 'మినుము', 'మినుములు'], 7600, 22, 70, 'pulses'],
+  ['bengalgram', 'Bengal gram', 'శనగ', ['bengalgram', 'bengal gram', 'chickpea', 'chana', 'శనగ', 'శనగలు'], 5800, 20, 68, 'pulses'],
+  ['horsegram', 'Horse gram', 'ఉలవ', ['horsegram', 'horse gram', 'ulava', 'ఉలవ', 'ఉలవలు'], 4500, 17, 72, 'pulses'],
+  ['sunflower', 'Sunflower', 'పొద్దుతిరుగుడు', ['sunflower', 'పొద్దుతిరుగుడు'], 6800, 21, 65, 'oil'],
+  ['sesame', 'Sesame', 'నువ్వులు', ['sesame', 'gingelly', 'til', 'నువ్వులు'], 9500, 24, 55, 'oil'],
+  ['castor', 'Castor', 'ఆముదం', ['castor', 'ఆముదం'], 6200, 22, 60, 'oil'],
+  ['cotton', 'Cotton', 'పత్తి', ['cotton', 'పత్తి'], 7200, 21, 62, 'cash'],
+  ['turmeric', 'Turmeric', 'పసుపు', ['turmeric', 'పసుపు'], 13500, 28, 50, 'cash'],
+  ['onion', 'Onion', 'ఉల్లి', ['onion', 'ఉల్లి', 'ఉల్లిపాయ'], 1800, 27, 35, 'veg'],
+  ['okra', 'Okra (ladies finger)', 'బెండకాయ', ['okra', 'ladyfinger', 'lady finger', 'bhindi', 'బెండ', 'బెండకాయ'], 3200, 28, 45, 'veg'],
+  ['cabbage', 'Cabbage', 'క్యాబేజీ', ['cabbage', 'క్యాబేజీ'], 1200, 24, 40, 'veg'],
+  ['cauliflower', 'Cauliflower', 'కాలీఫ్లవర్', ['cauliflower', 'కాలీఫ్లవర్'], 2200, 26, 40, 'veg'],
+  ['potato', 'Potato', 'బంగాళాదుంప', ['potato', 'బంగాళాదుంప', 'ఆలూ'], 2000, 22, 55, 'veg'],
+  ['carrot', 'Carrot', 'క్యారెట్', ['carrot', 'క్యారెట్'], 2800, 27, 45, 'veg'],
+  ['beans', 'Beans', 'బీన్స్', ['beans', 'french beans', 'బీన్స్', 'చిక్కుడు'], 4500, 29, 45, 'veg'],
+  ['cucumber', 'Cucumber', 'దోసకాయ', ['cucumber', 'దోసకాయ'], 1800, 25, 50, 'veg'],
+  ['bottlegourd', 'Bottle gourd', 'సొరకాయ', ['bottle gourd', 'bottlegourd', 'సొరకాయ'], 1500, 24, 50, 'veg'],
+  ['ridgegourd', 'Ridge gourd', 'బీరకాయ', ['ridge gourd', 'ridgegourd', 'బీరకాయ'], 3000, 27, 45, 'veg'],
+  ['bittergourd', 'Bitter gourd', 'కాకరకాయ', ['bitter gourd', 'bittergourd', 'కాకరకాయ'], 3500, 28, 45, 'veg'],
+  ['drumstick', 'Drumstick', 'మునగకాయ', ['drumstick', 'moringa', 'మునగ', 'మునగకాయ'], 5500, 30, 40, 'veg'],
+  ['coriander', 'Coriander', 'కొత్తిమీర', ['coriander', 'cilantro', 'కొత్తిమీర'], 4500, 28, 35, 'veg'],
+  ['mango', 'Mango', 'మామిడి', ['mango', 'మామిడి'], 4500, 30, 50, 'fruit'],
+  ['lemon', 'Lemon', 'నిమ్మ', ['lemon', 'lime', 'నిమ్మ', 'నిమ్మకాయ'], 5500, 29, 45, 'fruit'],
+  ['papaya', 'Papaya', 'బొప్పాయి', ['papaya', 'బొప్పాయి'], 1800, 27, 55, 'fruit'],
+  ['guava', 'Guava', 'జామ', ['guava', 'జామ'], 3000, 26, 60, 'fruit'],
+  ['pomegranate', 'Pomegranate', 'దానిమ్మ', ['pomegranate', 'దానిమ్మ'], 9000, 31, 55, 'fruit'],
+  ['grapes', 'Grapes', 'ద్రాక్ష', ['grapes', 'grape', 'ద్రాక్ష'], 6500, 30, 55, 'fruit'],
+  ['watermelon', 'Watermelon', 'పుచ్చకాయ', ['watermelon', 'పుచ్చకాయ'], 1200, 25, 50, 'fruit'],
+  ['muskmelon', 'Muskmelon', 'కర్బూజ', ['muskmelon', 'melon', 'కర్బూజ'], 2200, 25, 50, 'fruit'],
+  ['sapota', 'Sapota (chikoo)', 'సపోటా', ['sapota', 'chikoo', 'chikku', 'సపోటా'], 3500, 27, 65, 'fruit'],
+  ['custardapple', 'Custard apple', 'సీతాఫలం', ['custard apple', 'custardapple', 'సీతాఫలం'], 6000, 28, 50, 'fruit'],
+  ['coconut', 'Coconut', 'కొబ్బరి', ['coconut', 'కొబ్బరి'], 3000, 26, 75, 'cash'],
+  ['cashew', 'Cashew', 'జీడిమామిడి', ['cashew', 'జీడిపప్పు', 'జీడిమామిడి'], 11000, 27, 70, 'cash'],
+  ['oilpalm', 'Oil palm', 'ఆయిల్ పామ్', ['oil palm', 'oilpalm', 'palm', 'ఆయిల్ పామ్'], 1700, 28, 80, 'cash'],
+  ['amla', 'Amla (gooseberry)', 'ఉసిరి', ['amla', 'gooseberry', 'ఉసిరి'], 2500, 26, 60, 'fruit'],
+  ['tamarind', 'Tamarind', 'చింతపండు', ['tamarind', 'చింతపండు', 'చింత'], 6500, 24, 70, 'fruit'],
+  ['jackfruit', 'Jackfruit', 'పనస', ['jackfruit', 'పనస'], 2000, 25, 55, 'fruit'],
+  ['pineapple', 'Pineapple', 'అనాస', ['pineapple', 'అనాస'], 2500, 26, 55, 'fruit']
+];
+var DKEYS = ['annamayya', 'anantapuram', 'sathyasai'];
+(function () {
+  function rnd(n) { var st = n < 1000 ? 5 : 10; return Math.round(n / st) * st; }
+  EXTRA.forEach(function (x, i) {
+    var id = x[0], b = x[4];
+    CROPS[id] = { n: [x[1], x[2]], al: x[3] };
+    var ana = 0.95 + (i % 5) * 0.02, hin = 0.92 + (i % 4) * 0.02;
+    RATES[id] = { mad: rnd(b), ana: rnd(b * ana), hin: rnd(b * hin), vil: rnd(b * 0.8) };
+    MARGIN[id] = x[5]; STABILITY[id] = x[6]; CAT[id] = x[7];
+    DKEYS.forEach(function (d, j) { GLUT[d][id] = ((i * 37 + j * 23) % 55) + 15; });
+  });
+  ['paddy', 'maize', 'jowar', 'bajra'].forEach(function (c) { FF[c] = 0.5; });
+  FF.watermelon = 0.6; FF.cabbage = 0.7; FF.oilpalm = 0.5;
+  var all = Object.keys(CROPS);
+  var excl = {
+    annamayya: ['tobacco', 'cotton', 'grapes', 'bajra', 'oilpalm'],
+    anantapuram: ['coconut', 'pineapple', 'jackfruit', 'oilpalm', 'cashew'],
+    sathyasai: ['tobacco', 'pineapple', 'jackfruit', 'cashew', 'oilpalm']
+  };
+  DKEYS.forEach(function (d) {
+    var first = DISTRICT_CROPS[d];
+    var rest = all.filter(function (c) { return first.indexOf(c) < 0 && excl[d].indexOf(c) < 0; });
+    DISTRICT_CROPS[d] = first.concat(rest);
+  });
+})();
+/*ENDEXT*/
+var DISTRICTS = {
+  annamayya:   ['Annamayya', 'అన్నమయ్య'],
+  anantapuram: ['Anantapuram', 'అనంతపురం'],
+  sathyasai:   ['Sri Sathya Sai', 'శ్రీ సత్యసాయి']
+};
+var BUYERS = [
+  { id: 'b1', type: 'society',    crop: 'tomato',    name: ['Society A', 'సొసైటీ ఎ'],       place: ['Anantapur', 'అనంతపురం'], demand: ['Weekly, 3 to 4 crates', 'వారానికి 3 నుంచి 4 క్రేట్లు'], price: 1750 },
+  { id: 'b2', type: 'society',    crop: 'tomato',    name: ['Society B', 'సొసైటీ బి'],       place: ['Hindupur', 'హిందూపురం'], demand: ['Weekly, 3 to 4 crates', 'వారానికి 3 నుంచి 4 క్రేట్లు'], price: 1700 },
+  { id: 'b3', type: 'restaurant', crop: 'tomato',    name: ['Restaurant A', 'రెస్టారెంట్ ఎ'], place: ['Anantapur', 'అనంతపురం'], demand: ['Weekly, 5 quintals, price fixed before sowing', 'వారానికి 5 క్వింటాళ్లు, విత్తే ముందే ధర ఖరారు'], price: 1900 },
+  { id: 'b4', type: 'restaurant', crop: 'tomato',    name: ['Restaurant B', 'రెస్టారెంట్ బి'], place: ['Hindupur', 'హిందూపురం'], demand: ['Weekly, 3 quintals, price fixed before sowing', 'వారానికి 3 క్వింటాళ్లు, విత్తే ముందే ధర ఖరారు'], price: 1850 },
+  { id: 'b5', type: 'society',    crop: 'groundnut', name: ['Society C', 'సొసైటీ సి'],       place: ['Anantapur', 'అనంతపురం'], demand: ['Monthly, 2 quintals', 'నెలకు 2 క్వింటాళ్లు'], price: 6900 },
+  { id: 'b6', type: 'society',    crop: 'banana',    name: ['Society D', 'సొసైటీ డి'],       place: ['Hindupur', 'హిందూపురం'], demand: ['Weekly, 1 quintal', 'వారానికి 1 క్వింటాల్'], price: 2350 },
+  { id: 'b7', type: 'restaurant', crop: 'chilli',    name: ['Restaurant C', 'రెస్టారెంట్ సి'], place: ['Anantapur', 'అనంతపురం'], demand: ['Monthly, 2 quintals, price fixed before sowing', 'నెలకు 2 క్వింటాళ్లు, విత్తే ముందే ధర ఖరారు'], price: 12400 },
+  { id: 'b8',  type: 'society',    crop: 'leafy',       name: ['Society E', 'సొసైటీ ఇ'],        place: ['Anantapur', 'అనంతపురం'], demand: ['Weekly, 20 kg', 'వారానికి 20 కిలోలు'], price: 2300 },
+  { id: 'b9',  type: 'restaurant', crop: 'brinjal',     name: ['Restaurant D', 'రెస్టారెంట్ డి'], place: ['Hindupur', 'హిందూపురం'], demand: ['Weekly, 2 quintals, price fixed before sowing', 'వారానికి 2 క్వింటాళ్లు, విత్తే ముందే ధర ఖరారు'], price: 2250 },
+  { id: 'b10', type: 'society',    crop: 'sweetpotato', name: ['Society F', 'సొసైటీ ఎఫ్'],      place: ['Anantapur', 'అనంతపురం'], demand: ['Weekly, 50 kg', 'వారానికి 50 కిలోలు'], price: 2650 },
+  { id: 'b11', type: 'society',    crop: 'orange',      name: ['Society G', 'సొసైటీ జి'],       place: ['Hindupur', 'హిందూపురం'], demand: ['Weekly, 1 quintal', 'వారానికి 1 క్వింటాల్'], price: 4400 },
+  { id: 'b12', type: 'society',    crop: 'brinjal',     name: ['Society H', 'సొసైటీ హెచ్'],     place: ['Anantapur', 'అనంతపురం'], demand: ['Weekly, 30 kg', 'వారానికి 30 కిలోలు'], price: 2300 }
+];
+
+var I = {
+  appName: ['Smart Mandi', 'స్మార్ట్ మండి'],
+  tagline: ['Fair prices for every farmer', 'ప్రతి రైతుకు న్యాయమైన ధర'],
+  sampleBadge: ['Sample data · 24 Oct 2026', 'నమూనా డేటా · 24 అక్టో 2026'],
+  yourLoad: ['Your load', 'మీ పంట వివరాలు'],
+  ratesTitle: ['Markets and rates for {c}', '{c} కోసం మార్కెట్లు, ధరలు'],
+  ratesHint: ['Highest rate is not always the best deal. See Compare for net profit.', 'అత్యధిక ధర ఎప్పుడూ ఉత్తమం కాదు. నికర లాభం కోసం "పోల్చండి" చూడండి.'],
+  cropsHere: ['Crops grown in {d}', '{d}లో పండే పంటలు'],
+  vNotHere: ['{c} is not in the crop list for {d}.', '{d} పంటల జాబితాలో {c} లేదు.'],
+  sumHigh: ['Highest', 'అత్యధికం'],
+  sumAvg: ['Average', 'సగటు'],
+  sumLow: ['Lowest', 'అత్యల్పం'],
+  sumAvgNote: ['of {n} markets', '{n} మార్కెట్ల సగటు'],
+  howTitle: ['How to read this', 'ఇది ఎలా చదవాలి'],
+  howFormula: ['Net take-home = rate × quantity − freight', 'నికర ఆదాయం = ధర × పరిమాణం − రవాణా'],
+  howRank: ['Markets are ranked by net take-home, not by rate. The market with the highest rate is tagged "Highest rate".', 'మార్కెట్లను ధర బట్టి కాకుండా నికర ఆదాయం బట్టి ర్యాంక్ చేశాం. అత్యధిక ధర ఉన్న మార్కెట్‌కు "అత్యధిక ధర" అని ఉంటుంది.'],
+  howBar: ['In each bar, green is what you keep and red is freight.', 'ప్రతి బార్‌లో ఆకుపచ్చ మీ చేతికి వచ్చేది, ఎరుపు రవాణా ఖర్చు.'],
+  howBook: ['Tap "Book truck" on a market to see truck quotes for that trip.', 'ఆ మార్కెట్‌కు ట్రక్కు ధరలు చూడటానికి "ట్రక్కు బుక్ చేయండి" నొక్కండి.'],
+  howFees: ['Market commission and loading fees are not included.', 'మార్కెట్ కమీషన్, లోడింగ్ ఖర్చులు చేర్చలేదు.'],
+  howEx: ['Example with your load', 'మీ పంటతో ఉదాహరణ'],
+  sumAcross: ['Across all markets', 'అన్ని మార్కెట్లలో'],
+  rangeAt: ['Price range at {m}', '{m}లో ధర పరిమితి'],
+  rangeNote: ['Sample low, average and high for the day. Net profit uses the average.', 'ఆ రోజు నమూనా కనిష్ట, సగటు, గరిష్ట ధరలు. నికర లాభం సగటు ధరతో లెక్కిస్తాం.'],
+  tapMarket: ['Tap a market to see its highest, average and lowest price.', 'ఒక మార్కెట్‌ను నొక్కితే దాని అత్యధిక, సగటు, అత్యల్ప ధరలు కనిపిస్తాయి.'],
+  loading: ['Loading…', 'లోడ్ అవుతోంది…'],
+  apiError: ['Could not load the data. Try again.', 'డేటా లోడ్ కాలేదు. మళ్లీ ప్రయత్నించండి.'],
+  signIn: ['Sign in', 'లాగిన్'],
+  signOut: ['Sign out', 'లాగౌట్'],
+  close: ['Close', 'మూసివేయి'],
+  loginTitle: ['Sign in to continue', 'కొనసాగడానికి లాగిన్ చేయండి'],
+  loginWhy: ['Browsing is free. Sign in to book a truck or offer your crop to a buyer.', 'చూడటం ఉచితం. ట్రక్కు బుక్ చేయడానికి లేదా కొనుగోలుదారుకు పంటను అందించడానికి లాగిన్ చేయండి.'],
+  viaPhone: ['Mobile number', 'మొబైల్ నంబర్'],
+  viaGmail: ['Gmail', 'జీమెయిల్'],
+  phoneLbl: ['Mobile number', 'మొబైల్ నంబర్'],
+  emailLbl: ['Gmail address', 'జీమెయిల్ చిరునామా'],
+  sendOtp: ['Send OTP', 'OTP పంపండి'],
+  sendCode: ['Send code', 'కోడ్ పంపండి'],
+  otpLbl: ['Enter the 6-digit OTP', '6 అంకెల OTP నమోదు చేయండి'],
+  codeLbl: ['Enter the 6-digit code', '6 అంకెల కోడ్ నమోదు చేయండి'],
+  sentTo: ['Sent to {to}', '{to}కు పంపాం'],
+  change: ['Change', 'మార్చండి'],
+  verify: ['Verify and continue', 'ధృవీకరించి కొనసాగండి'],
+  resend: ['Send again', 'మళ్లీ పంపండి'],
+  resendIn: ['Send again in {s} s', '{s} సెకన్లలో మళ్లీ పంపండి'],
+  demoCode: ['Demo code', 'డెమో కోడ్'],
+  demoCodeNote: ['A real server sends this by SMS or email.', 'నిజమైన సర్వర్ దీన్ని SMS లేదా ఈమెయిల్‌లో పంపుతుంది.'],
+  demoLogin: ['Demo sign-in: no real SMS or email is sent.', 'డెమో లాగిన్: నిజమైన SMS లేదా ఈమెయిల్ వెళ్లదు.'],
+  farmersOnly: ['For farmers. Truck owners and buyers sign up separately.', 'రైతుల కోసం. ట్రక్కు యజమానులు, కొనుగోలుదారులు వేరుగా నమోదు చేసుకుంటారు.'],
+  errPhone: ['Enter a 10-digit mobile number starting with 6, 7, 8 or 9.', '6, 7, 8 లేదా 9తో మొదలయ్యే 10 అంకెల మొబైల్ నంబర్ ఇవ్వండి.'],
+  errEmail: ['Enter a Gmail address ending in @gmail.com.', '@gmail.comతో ముగిసే జీమెయిల్ చిరునామా ఇవ్వండి.'],
+  errOtp: ['That code is wrong. Check it and try again.', 'ఆ కోడ్ తప్పు. చూసి మళ్లీ ప్రయత్నించండి.'],
+  errExpired: ['That code has expired. Send a new one.', 'ఆ కోడ్ గడువు ముగిసింది. కొత్తది పంపండి.'],
+  errTries: ['Too many wrong tries. Send a new code.', 'చాలాసార్లు తప్పు కోడ్. కొత్త కోడ్ పంపండి.'],
+  bookedBy: ['Booked by', 'బుక్ చేసింది'],
+  village: ['Your village', 'మీ గ్రామం'],
+  villagePh: ['Village or mandal name', 'గ్రామం లేదా మండలం పేరు'],
+  villageHint: ["Used to open Google Maps directions. Leave it empty and Google Maps starts from your phone's location.", 'గూగుల్ మ్యాప్స్ దారి తెరవడానికి వాడతాం. ఖాళీగా వదిలితే గూగుల్ మ్యాప్స్ మీ ఫోన్ లొకేషన్ నుంచి మొదలవుతుంది.'],
+  directions: ['Directions', 'దారి'],
+  openMaps: ['Open route in Google Maps', 'గూగుల్ మ్యాప్స్‌లో మార్గం తెరవండి'],
+  mapsNote: ['Distances and freight use an example village. Google Maps shows the real road route from your village.', 'దూరం, రవాణా ఖర్చు ఒక ఉదాహరణ గ్రామం ఆధారంగా అంచనా. గూగుల్ మ్యాప్స్ మీ గ్రామం నుంచి అసలైన రోడ్డు మార్గం చూపిస్తుంది.'],
+  pickup: ['Pickup village', 'పికప్ గ్రామం'],
+  unitQ: ['Quintal', 'క్వింటాల్'],
+  unitKg: ['Kg', 'కిలో'],
+  wQ1: ['quintal', 'క్వింటాల్'],
+  wQn: ['quintals', 'క్వింటాళ్లు'],
+  wKg: ['kg', 'కిలోలు'],
+  ratePerKg: ['Rate / kg', 'కిలో ధర'],
+  perKg: ['per kg', 'కిలోకు'],
+  pilotLegend: ['Pilot crop', 'పైలట్ పంట'],
+  searchLbl: ['Find a crop', 'పంట వెతకండి'],
+  searchPh: ['Type or speak a crop name', 'పంట పేరు టైప్ చేయండి లేదా చెప్పండి'],
+  voice: ['Voice search', 'మాటతో వెతకండి'],
+  crop: ['Crop', 'పంట'],
+  pilot: ['Pilot', 'పైలట్'],
+  sampleRates: ['Sample rates', 'నమూనా ధరలు'],
+  qty: ['Quantity', 'పరిమాణం'],
+  district: ['Your district', 'మీ జిల్లా'],
+  share: ['Share the truck with a neighbour and split the freight', 'పొరుగు రైతుతో ట్రక్కు పంచుకుని రవాణా ఖర్చు సగం చేసుకోండి'],
+  pilotNote: ['Pilot crop is tomato. Other crops show sample rates.', 'పైలట్ పంట టమాటా. ఇతర పంటలకు నమూనా ధరలు చూపిస్తున్నాం.'],
+  tabCompare: ['Compare', 'పోల్చండి'],
+  tabTrucks: ['Trucks', 'ట్రక్కులు'],
+  tabBuyers: ['Buyers', 'కొనుగోలుదారులు'],
+  tabAdvice: ['Sowing advice', 'సాగు సలహా'],
+  bestFor: ['Best for your load', 'మీ పంటకు ఉత్తమమైనది'],
+  takeHome: ['take-home for {q}', '{q} అమ్మితే చేతికి వచ్చేది'],
+  moreThan: ['{x} more than {m}, the highest-rate market.', 'అత్యధిక ధర ఉన్న {m} కంటే {x} ఎక్కువ.'],
+  alsoHighest: ['This market also has the highest rate.', 'ఈ మార్కెట్‌లో ధర కూడా అత్యధికం.'],
+  whyNet: ['Net profit, not gross rate, should pick the market.', 'మార్కెట్‌ను నికర లాభం బట్టి ఎంచుకోండి, మొత్తం ధర బట్టి కాదు.'],
+  legNet: ['Net take-home', 'నికర ఆదాయం'],
+  legFreight: ['Freight', 'రవాణా'],
+  badgeBest: ['Best net profit', 'ఉత్తమ నికర లాభం'],
+  badgeHigh: ['Highest rate', 'అత్యధిక ధర'],
+  lblRate: ['Rate / quintal', 'క్వింటాల్ ధర'],
+  lblGross: ['Gross', 'మొత్తం'],
+  lblFreight: ['Freight (est.)', 'రవాణా (అంచనా)'],
+  lblNet: ['Net take-home', 'నికర ఆదాయం'],
+  km: ['km', 'కి.మీ.'],
+  src: ['Source', 'మూలం'],
+  bookTruck: ['Book truck', 'ట్రక్కు బుక్ చేయండి'],
+  localPickup: ['Local pickup, no truck booking', 'స్థానికంగానే, ట్రక్కు అవసరం లేదు'],
+  freightNote: ['Freight is an estimate from an example village in your district. Live truck-owner quotes appear when you book.', 'రవాణా ఖర్చు మీ జిల్లాలోని ఒక ఉదాహరణ గ్రామం ఆధారంగా అంచనా. బుక్ చేసేటప్పుడు ట్రక్కు యజమానుల అసలు ధరలు కనిపిస్తాయి.'],
+  route: ['Route', 'మార్గం'],
+  from: ['From', 'ఎక్కడి నుంచి'],
+  fromVal: ['Example village, {d}', 'ఉదాహరణ గ్రామం, {d}'],
+  to: ['To', 'ఎక్కడికి'],
+  loadLine: ['{q} of {c}', '{c}: {q}'],
+  nearby: ['Verified trucks within 10 km', '10 కి.మీ. లోపు ధృవీకరించిన ట్రక్కులు'],
+  capacity: ['Capacity', 'సామర్థ్యం'],
+  q: ['q', 'క్వి.'],
+  perQ: ['per quintal', 'క్వింటాల్‌కు'],
+  total: ['Freight total', 'మొత్తం రవాణా'],
+  yourShare: ['Your half of the freight', 'రవాణాలో మీ సగం'],
+  lowest: ['Lowest rate', 'తక్కువ ధర'],
+  tooSmall: ['Too small for {q}', '{q} కోసం ట్రక్కు చిన్నది'],
+  verified: ['ID and vehicle papers checked', 'గుర్తింపు, వాహన పత్రాలు పరిశీలించాం'],
+  away: ['away', 'దూరంలో'],
+  confirmOnline: ['Confirm online', 'ఆన్‌లైన్‌లో నిర్ధారించండి'],
+  demoPhone: ['Demo number', 'డెమో నంబర్'],
+  copy: ['Copy', 'కాపీ'],
+  copied: ['Copied', 'కాపీ అయింది'],
+  booked: ['Booking recorded', 'బుకింగ్ నమోదైంది'],
+  bookedNote: ['Demo only. No real booking or message is sent.', 'ఇది డెమో మాత్రమే. నిజమైన బుకింగ్ లేదా సందేశం వెళ్లదు.'],
+  ref: ['Reference', 'రిఫరెన్స్'],
+  truck: ['Truck', 'ట్రక్కు'],
+  freightLbl: ['Freight', 'రవాణా'],
+  payTitle: ['Get paid', 'చెల్లింపు'],
+  payNote: ['Buyer pays on delivery, by UPI or cash.', 'డెలివరీ సమయంలో కొనుగోలుదారు యూపీఐ లేదా నగదుతో చెల్లిస్తారు.'],
+  newBooking: ['Book another', 'మరొకటి బుక్ చేయండి'],
+  society: ['Housing societies', 'హౌసింగ్ సొసైటీలు'],
+  restaurant: ['Restaurants', 'రెస్టారెంట్లు'],
+  introSociety: ['Weekly orders, no market commission. Even 3 or 4 crates qualify.', 'వారానికోసారి ఆర్డర్లు, మార్కెట్ కమీషన్ లేదు. 3 లేదా 4 క్రేట్లు ఉన్నా సరిపోతుంది.'],
+  introRestaurant: ['Chefs order weeks before planting. A price agreed before sowing protects you from a crash.', 'విత్తనానికి వారాల ముందే చెఫ్‌లు ఆర్డర్ ఇస్తారు. విత్తే ముందే ధర ఖరారైతే ధరలు పడిపోయినా నష్టం ఉండదు.'],
+  offer: ['Offer', 'ఆఫర్ ధర'],
+  vsTrader: ['{x} {u} above the village trader', 'గ్రామ వ్యాపారి కంటే {u} {x} ఎక్కువ'],
+  offerBtn: ['Offer my crop', 'నా పంటను అందించండి'],
+  offered: ['Interest noted (demo)', 'ఆసక్తి నమోదైంది (డెమో)'],
+  sampleBuyer: ['Sample listing', 'నమూనా జాబితా'],
+  noBuyers: ['No sample buyers of this type for {c} yet. The pilot starts with tomato.', 'ఈ రకం నమూనా కొనుగోలుదారులు {c} కోసం ఇంకా లేరు. పైలట్ టమాటాతో మొదలవుతుంది.'],
+  adviceTitle: ['Best crop to sow in {d}', '{d}లో విత్తడానికి ఉత్తమ పంట'],
+  adviceWhy: ['Ranked on margin, price stability and glut risk.', 'లాభ శాతం, ధర స్థిరత్వం, ధరలు పడే ప్రమాదం ఆధారంగా ర్యాంక్.'],
+  score: ['Score {s} of 100', '100కి {s} స్కోరు'],
+  marginChart: ['Expected net margin (%), illustrative', 'ఆశించే నికర లాభ శాతం (నమూనా)'],
+  allCrops: ['All crops in {d}', '{d}లో అన్ని పంటలు'],
+  glut: ['Glut risk', 'ధరలు పడే ప్రమాదం'],
+  stability: ['Price stability', 'ధర స్థిరత్వం'],
+  low: ['Low', 'తక్కువ'],
+  med: ['Medium', 'మధ్యస్థం'],
+  high: ['High', 'ఎక్కువ'],
+  glutText: ["The glut problem: when too many farmers in one district sow the same crop, prices crash at the Madanapalle and Kadiri yards. Spreading crops across farmers protects everyone's price.", 'ధరలు పడిపోవడం: ఒకే జిల్లాలో చాలా మంది రైతులు ఒకే పంట వేస్తే మదనపల్లె, కదిరి యార్డుల్లో ధరలు పడిపోతాయి. రైతులు వేర్వేరు పంటలు వేస్తే అందరి ధర కాపాడబడుతుంది.'],
+  scoreNote: ['Sample scoring: margin 40%, price stability 30%, glut risk 30%. All figures illustrative.', 'నమూనా స్కోరింగ్: లాభం 40%, ధర స్థిరత్వం 30%, ప్రమాదం 30%. అన్ని అంకెలు నమూనా మాత్రమే.'],
+  dataTitle: ['Where the data comes from', 'డేటా ఎక్కడి నుంచి'],
+  d1: ['Mandi prices: public data from Agmarknet and e-NAM', 'మండి ధరలు: అగ్మార్క్‌నెట్, e-NAM ప్రజా డేటా'],
+  d2: ['Truck rates: quoted by verified owners on the site', 'ట్రక్కు ధరలు: సైట్‌లో ధృవీకరించిన యజమానులు చెప్పేవి'],
+  d3: ['Local gaps: field volunteers record rates at small yards', 'స్థానిక లోటు: చిన్న యార్డుల ధరలను క్షేత్ర వాలంటీర్లు నమోదు చేస్తారు'],
+  d4: ['Acreage and history: official district reports and past price series', 'విస్తీర్ణం, చరిత్ర: అధికారిక జిల్లా నివేదికలు, గత ధరల వరుస'],
+  aboutTitle: ['About this prototype', 'ఈ ప్రోటోటైప్ గురించి'],
+  a1: ['Working now: net-profit math, truck booking flow, Telugu.', 'ఇప్పుడు పనిచేసేవి: నికర లాభం లెక్క, ట్రక్కు బుకింగ్ విధానం, తెలుగు.'],
+  a2: ['Sample for the demo: prices, distances, trucks, buyers.', 'డెమో కోసం నమూనా: ధరలు, దూరాలు, ట్రక్కులు, కొనుగోలుదారులు.'],
+  a3: ['Next: live Agmarknet and e-NAM feed, real bookings, UPI payments.', 'తర్వాత: ప్రత్యక్ష అగ్మార్క్‌నెట్, e-NAM డేటా, నిజమైన బుకింగ్‌లు, యూపీఐ చెల్లింపులు.'],
+  team: ['Team Rohit · Fair Prices for Every Farmer', 'టీమ్ రోహిత్ · ప్రతి రైతుకు న్యాయమైన ధర'],
+  vUnsupported: ['Voice search is not available here. Type the crop name instead.', 'ఇక్కడ మాటతో వెతకడం పని చేయడం లేదు. పంట పేరు టైప్ చేయండి.'],
+  vListening: ['Listening…', 'వింటున్నాను…'],
+  vNoMatch: ['Did not catch a crop name. Try again.', 'పంట పేరు అర్థం కాలేదు. మళ్లీ ప్రయత్నించండి.'],
+  vSelected: ['Selected {c}.', '{c} ఎంచుకున్నాం.'],
+  vNone: ['No crop matches that. Pick one from the list below.', 'ఆ పేరుతో పంట లేదు. కింది జాబితా నుంచి ఎంచుకోండి.'],
+  useGps: ['Use my phone location', 'నా ఫోన్ లొకేషన్ వాడండి'],
+  gpsWait: ['Finding your location…', 'మీ లొకేషన్ వెతుకుతున్నాం…'],
+  gpsGot: ['Location saved. Google Maps will start from here.', 'లొకేషన్ సేవ్ అయింది. గూగుల్ మ్యాప్స్ ఇక్కడి నుంచి మొదలవుతుంది.'],
+  gpsFail: ['Could not read your location. Type your village name instead.', 'మీ లొకేషన్ తెలియలేదు. బదులుగా గ్రామం పేరు టైప్ చేయండి.'],
+  gpsOff: ['Using the village name. Tap the target button to use your phone location.', 'గ్రామం పేరు వాడుతున్నాం. ఫోన్ లొకేషన్ కోసం టార్గెట్ బటన్ నొక్కండి.'],
+  gpsLabel: ['My GPS location', 'నా GPS లొకేషన్'],
+  locTitle: ['Set your village location', 'మీ గ్రామ లొకేషన్ సెట్ చేయండి'],
+  locWhy: ['Required. We use it to show the road route from your village to every market and to find colonies near you.', 'తప్పనిసరి. మీ గ్రామం నుంచి ప్రతి మార్కెట్‌కు రోడ్డు మార్గం, మీ దగ్గరి కాలనీలు చూపడానికి వాడతాం.'],
+  orTypeVillage: ['Or type your village', 'లేదా మీ గ్రామం పేరు టైప్ చేయండి'],
+  locContinue: ['Save and continue', 'సేవ్ చేసి కొనసాగండి'],
+  errLoc: ['Allow phone location or type your village name to continue.', 'కొనసాగడానికి ఫోన్ లొకేషన్ అనుమతించండి లేదా గ్రామం పేరు టైప్ చేయండి.'],
+  fromYouKm: ['about {k} km from you', 'మీ నుంచి సుమారు {k} కి.మీ.'],
+  callOwner: ['Request a call-back', 'కాల్ బ్యాక్ కోరండి'],
+  numPrivate: ['Driver phone numbers are private. Book online or request a call-back and the owner connects you.', 'డ్రైవర్ ఫోన్ నంబర్లు గోప్యం. ఆన్‌లైన్‌లో బుక్ చేయండి లేదా కాల్ బ్యాక్ కోరండి, యజమాని మిమ్మల్ని కలుపుతారు.'],
+  callbackDone: ['Call-back requested. The owner will call you soon. (Demo)', 'కాల్ బ్యాక్ కోరారు. యజమాని త్వరలో కాల్ చేస్తారు. (డెమో)'],
+  tabColonies: ['Colonies', 'కాలనీలు'],
+  colTitle: ['Colonies in nearby cities', 'సమీప పట్టణాల్లో కాలనీలు'],
+  colIntro: ['Housing colonies and apartments are steady buyers. Find them on Google Maps and plan a direct sale.', 'హౌసింగ్ కాలనీలు, అపార్ట్‌మెంట్లు స్థిరమైన కొనుగోలుదారులు. గూగుల్ మ్యాప్స్‌లో వెతికి నేరుగా అమ్మకం ప్లాన్ చేయండి.'],
+  colColony: ['Housing colonies', 'హౌసింగ్ కాలనీలు'],
+  colApt: ['Apartments', 'అపార్ట్‌మెంట్లు'],
+  colGated: ['Gated communities', 'గేటెడ్ కమ్యూనిటీలు'],
+  colNearMe: ['Near me', 'నా దగ్గర'],
+  colOrigGps: ['your location', 'మీ లొకేషన్'],
+  colOrigDist: ['{d} district centre', '{d} జిల్లా కేంద్రం'],
+  colKm: ['{k} km from {o}', '{o} నుంచి {k} కి.మీ.'],
+  colShow: ['Show on map', 'మ్యాప్‌లో చూపండి'],
+  colOpen: ['Open in Google Maps', 'గూగుల్ మ్యాప్స్‌లో తెరవండి'],
+  colNearest: ['Nearest', 'అతి దగ్గర'],
+  colNoGps: ['Tap the target button next to your village for exact distances and a Near me map.', 'సరైన దూరాలు, "నా దగ్గర" మ్యాప్ కోసం గ్రామం పక్కన టార్గెట్ బటన్ నొక్కండి.'],
+  colNote: ['The map is live from Google Maps. Distances are straight-line.', 'మ్యాప్ నేరుగా గూగుల్ మ్యాప్స్ నుంచి. దూరాలు నేరుగా కొలిచినవి.'],
+  colMapTitle: ['Google Maps results', 'గూగుల్ మ్యాప్స్ ఫలితాలు']
+};
+Object.assign(I, {
+  catAll: ['All', 'అన్నీ'], catGrain: ['Grains', 'ధాన్యాలు'], catPulse: ['Pulses', 'పప్పులు'], catOil: ['Oilseeds', 'నూనె గింజలు'],
+  catVeg: ['Vegetables', 'కూరగాయలు'], catFruit: ['Fruits', 'పండ్లు'], catCash: ['Cash and plantation', 'వాణిజ్య పంటలు'],
+  routeMapTitle: ['Route from your village to {m}', 'మీ గ్రామం నుంచి {m}కు మార్గం'],
+  routeSet: ['Add your village name or turn on location to draw the route from your door.', 'మీ గ్రామం నుంచి మార్గం చూపడానికి గ్రామం పేరు ఇవ్వండి లేదా లొకేషన్ ఆన్ చేయండి.'],
+  colRouteTitle: ['Route from your village to {c}', 'మీ గ్రామం నుంచి {c}కు మార్గం'],
+  sampleBadge: ['Indicative rates · 29 Oct 2026', 'సూచనాత్మక ధరలు · 29 అక్టో 2026'],
+  rangeNote: ['Indicative low, average and high for the day. Net profit uses the average.', 'ఆ రోజు సూచనాత్మక కనిష్ట, సగటు, గరిష్ట ధరలు. నికర లాభం సగటు ధరతో లెక్కిస్తాం.'],
+  freightNote: ['Freight is an estimate for a typical village in your district. The truck owner confirms the final amount when you book.', 'రవాణా ఖర్చు మీ జిల్లాలోని సాధారణ గ్రామం ఆధారంగా అంచనా. బుక్ చేసినప్పుడు ట్రక్కు యజమాని తుది మొత్తం నిర్ధారిస్తారు.'],
+  mapsNote: ['Google Maps shows the real road route and distance from your village.', 'గూగుల్ మ్యాప్స్ మీ గ్రామం నుంచి అసలైన రోడ్డు మార్గం, దూరం చూపిస్తుంది.'],
+  bookedNote: ['Request recorded. The owner will confirm by phone before pickup.', 'అభ్యర్థన నమోదైంది. పికప్‌కు ముందు యజమాని ఫోన్‌లో నిర్ధారిస్తారు.'],
+  sampleBuyer: ['Listed buyer', 'జాబితాలోని కొనుగోలుదారు'],
+  offered: ['Interest noted', 'ఆసక్తి నమోదైంది'],
+  noBuyers: ['No listed buyers of this type for {c} yet.', 'ఈ రకం కొనుగోలుదారులు {c} కోసం ఇంకా లేరు.'],
+  scoreNote: ['Scoring: margin 40%, price stability 30%, glut risk 30%. Figures are indicative.', 'స్కోరింగ్: లాభం 40%, ధర స్థిరత్వం 30%, ప్రమాదం 30%. అంకెలు సూచనాత్మకం.'],
+  marginChart: ['Expected net margin (%), top 12', 'ఆశించే నికర లాభ శాతం, మొదటి 12'],
+  fromVal: ['Typical village, {d}', 'సాధారణ గ్రామం, {d}'],
+  aboutTitle: ['About Smart Mandi', 'స్మార్ట్ మండి గురించి'],
+  a1: ['Built for Andhra Pradesh farmers: net-profit comparison, truck booking, nearby colonies, Telugu and English.', 'ఆంధ్రప్రదేశ్ రైతుల కోసం: నికర లాభ పోలిక, ట్రక్కు బుకింగ్, సమీప కాలనీలు, తెలుగు, ఇంగ్లీష్.'],
+  a2: ['Rates are indicative mandi rates while the Agmarknet and e-NAM feeds are connected.', 'అగ్మార్క్‌నెట్, e-NAM డేటా అనుసంధానం అయ్యే వరకు ధరలు సూచనాత్మకం.'],
+  a3: ['Truck owners are verified and their phone numbers stay private.', 'ట్రక్కు యజమానులను ధృవీకరిస్తాం, వారి ఫోన్ నంబర్లు గోప్యంగా ఉంటాయి.']
+});
+
+var state = { lang: 'en', crop: 'tomato', district: 'annamayya', qty: 10, unit: 'q', share: false, user: null, token: null, village: '', openMarket: 'mad', lastTrucks: null, lastDest: null, tab: 'compare', dest: null, truck: null, booked: null, called: false, buyerType: 'society', offered: {}, copied: false, loc: null, colType: 'colony', colCity: 'auto', cat: 'all', mapMkt: null };
+
+function L(pair) { return pair[state.lang === 'te' ? 1 : 0]; }
+function t(k, v) {
+  var s = L(I[k] || [k, k]);
+  if (v) Object.keys(v).forEach(function (x) { s = s.split('{' + x + '}').join(v[x]); });
+  return s;
+}
+function inr(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function $(s) { return document.querySelector(s); }
+function cropName(c) { return L(CROPS[c].n); }
+function distName() { return L(DISTRICTS[state.district]); }
+function fmtNum(n) { return Number(n.toFixed(2)).toLocaleString('en-IN'); }
+function qtyIn() { return state.unit === 'kg' ? Math.round(state.qty * 100) : Number(state.qty.toFixed(2)); }
+function qtyLabel(q) {
+  if (state.unit === 'kg') return Math.round(q * 100).toLocaleString('en-IN') + ' ' + t('wKg');
+  return fmtNum(q) + ' ' + t(q === 1 ? 'wQ1' : 'wQn');
+}
+function inrU(n) {
+  if (state.unit !== 'kg') return inr(n);
+  var v = n / 100;
+  return '₹' + (v >= 100 ? Math.round(v).toLocaleString('en-IN') : v.toFixed(2));
+}
+function rateLbl() { return t(state.unit === 'kg' ? 'ratePerKg' : 'lblRate'); }
+function perUnit() { return t(state.unit === 'kg' ? 'perKg' : 'perQ'); }
+function capText(cap) { return state.unit === 'kg' ? (cap * 100).toLocaleString('en-IN') + ' ' + t('wKg') : cap + ' ' + t('q'); }
+
+var ICON = {
+  truck: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3z"/><path d="M14 9h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+  check: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>'
+};
+
+function applyStatic() {
+  document.documentElement.lang = state.lang === 'te' ? 'te' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(function (el) { el.placeholder = t(el.dataset.i18nPh); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(function (el) { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
+  document.querySelectorAll('[data-act="lang"]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.v === state.lang)); });
+  renderDists();
+  renderAuth();
+  if (LG.open) renderLogin();
+}
+function renderDists() {
+  $('#dists').innerHTML = Object.keys(DISTRICTS).map(function (d) {
+    return '<button type="button" class="chip" data-act="district" data-v="' + d + '" aria-pressed="' + (state.district === d) + '">' + esc(L(DISTRICTS[d])) + '</button>';
+  }).join('');
+}
+function setDistrict(d) {
+  state.district = d; state.truck = null; state.dest = null; resetBooking();
+  if (cropsHere().indexOf(state.crop) < 0) state.crop = cropsHere()[0];
+  say(''); $('#q').value = '';
+  renderDists(); renderChips(); renderRates(); renderView();
+}
+function cropsHere() { return DISTRICT_CROPS[state.district]; }
+function renderChips() {
+  $('#cropsLabel').textContent = t('cropsHere', { d: distName() });
+  var cats = [['all', 'catAll'], ['grain', 'catGrain'], ['pulses', 'catPulse'], ['oil', 'catOil'], ['veg', 'catVeg'], ['fruit', 'catFruit'], ['cash', 'catCash']];
+  $('#cats').innerHTML = cats.map(function (x) {
+    return '<button type="button" class="chip" data-act="cat" data-v="' + x[0] + '" aria-pressed="' + (state.cat === x[0]) + '">' + esc(t(x[1])) + '</button>';
+  }).join('');
+  $('#chips').innerHTML = cropsHere().filter(function (c) { return state.cat === 'all' || CAT[c] === state.cat; }).map(function (c) {
+    var pilot = false;
+    return '<button type="button" class="chip" data-act="crop" data-v="' + c + '" aria-pressed="' + (state.crop === c) + '"' + (pilot ? ' aria-label="' + esc(cropName(c) + ' · ' + t('pilot')) + '"' : '') + '>' + esc(cropName(c)) + (pilot ? '<i class="dot"></i>' : '') + '</button>';
+  }).join('');
+}
+/* ---- Mock API layer. Set USE_MOCK = false and API_BASE to a real server that returns the same JSON. ---- */
+var API_BASE = '';
+var USE_MOCK = true;
+var MOCK_DELAY = 80;
+var API_LOG = [];
+function apiQuery(q) {
+  if (!q) return '';
+  var parts = Object.keys(q).filter(function (k) { return q[k] !== undefined && q[k] !== null && q[k] !== ''; }).map(function (k) { return k + '=' + encodeURIComponent(q[k]); });
+  return parts.length ? '?' + parts.join('&') : '';
+}
+function apiCall(method, path, query, body, mock) {
+  var url = path + apiQuery(query);
+  var t0 = Date.now();
+  var run;
+  if (USE_MOCK) {
+    run = new Promise(function (resolve, reject) {
+      setTimeout(function () { try { resolve(mock()); } catch (e) { reject(e); } }, MOCK_DELAY);
+    });
+  } else {
+    run = fetch(API_BASE + url, { method: method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  }
+  return run.then(function (data) {
+    apiLog(method, url, body, 200, Date.now() - t0, data);
+    return data;
+  }, function (err) {
+    apiLog(method, url, body, 'error', Date.now() - t0, { error: String(err && err.message || err) });
+    throw err;
+  });
+}
+function apiLog(method, url, body, status, ms, data) {
+  API_LOG.unshift({ method: method, url: url, body: body, status: status, ms: ms, data: data });
+  if (API_LOG.length > 8) API_LOG.pop();
+  renderApiLog();
+}
+function renderApiLog() {
+  var el = $('#apilog');
+  if (!el) return;
+  el.innerHTML = API_LOG.map(function (c) {
+    var json = JSON.stringify(c.data, null, 1);
+    if (json.length > 1800) json = json.slice(0, 1800) + '\n… (shortened)';
+    var req = c.body ? '// request\n' + JSON.stringify(c.body, null, 1) + '\n// response\n' : '';
+    return '<li><details><summary><code>' + esc(c.method + ' ' + c.url) + '</code> · ' + esc(String(c.status)) + ' · ' + c.ms + ' ms</summary><pre>' + esc(req + json) + '</pre></details></li>';
+  }).join('');
+}
+var API = {
+  markets: function (p) {
+    return apiCall('GET', '/api/markets', { crop: p.crop }, null, function () {
+      var rows = MARKETS.map(function (m) {
+        var pr = priceRange(p.crop, m);
+        return { id: m, min_price: pr.lo, modal_price: pr.avg, max_price: pr.hi, source: SOURCE[m][0], status: STATUS[m][0] };
+      });
+      rows.sort(function (a, b) { return b.modal_price - a.modal_price; });
+      return { crop: p.crop, unit: 'quintal', as_of: '2026-10-29', is_sample: true, markets: rows };
+    });
+  },
+  compare: function (p) {
+    return apiCall('GET', '/api/compare', { crop: p.crop, district: p.district, quantity: p.quantity, share: p.share }, null, function () {
+      var r = compute(p.crop, p.district, p.quantity, p.share);
+      return {
+        crop: p.crop, district: p.district, quantity_quintals: p.quantity, share: p.share, as_of: '2026-10-29', is_sample: true,
+        markets: r.rows.map(function (x) { return { id: x.id, rate_per_quintal: x.rate, distance_km: x.km, gross: x.gross, freight: x.freight, net: x.net }; }),
+        best_market_id: r.best.id, highest_rate_market_id: r.high.id, extra_take_home: r.delta
+      };
+    });
+  },
+  trucks: function (p) {
+    return apiCall('GET', '/api/trucks', { crop: p.crop, district: p.district, to: p.to, quantity: p.quantity, share: p.share }, null, function () {
+      var qs = truckQuotes(p.crop, p.district, p.to, p.quantity, p.share);
+      return {
+        crop: p.crop, district: p.district, to: p.to, distance_km: ROUTES[p.district][p.to][0], quantity_quintals: p.quantity, share: p.share, is_sample: true,
+        trucks: qs.map(function (q) {
+          return { id: q.t.id, name: q.t.name[0], name_te: q.t.name[1], vehicle: q.t.veh[0], vehicle_te: q.t.veh[1], capacity_quintals: q.t.cap, km_away: q.t.km, rate_per_quintal: q.perQ, freight_total: q.total, fits: q.fits, verified: true };
+        })
+      };
+    });
+  },
+  createBooking: function (body) {
+    return apiCall('POST', '/api/bookings', null, body, function () {
+      var q = truckQuotes(body.crop, body.district, body.to, body.quantity_quintals, body.share).filter(function (x) { return x.t.id === body.truck_id; })[0];
+      if (!q) throw new Error('truck_not_found');
+      return { booking: {
+        ref: 'SM-' + (Date.now() % 100000).toString().padStart(5, '0'), status: 'requested',
+        crop: body.crop, district: body.district, to: body.to, quantity_quintals: body.quantity_quintals, shared: !!body.share, freight_total: q.total, farmer_id: body.farmer_id || null, pickup_village: body.pickup_village || null,
+        truck: { id: q.t.id, name: q.t.name[0], name_te: q.t.name[1], vehicle: q.t.veh[0], vehicle_te: q.t.veh[1] }
+      } };
+    });
+  },
+  buyers: function (p) {
+    return apiCall('GET', '/api/buyers', { crop: p.crop, type: p.type }, null, function () {
+      return {
+        crop: p.crop, type: p.type, unit: 'quintal', is_sample: true, village_trader_rate: RATES[p.crop].vil,
+        buyers: BUYERS.filter(function (b) { return b.type === p.type && b.crop === p.crop; }).map(function (b) {
+          return { id: b.id, type: b.type, name: b.name[0], name_te: b.name[1], place: b.place[0], place_te: b.place[1], demand: b.demand[0], demand_te: b.demand[1], price_per_quintal: b.price };
+        })
+      };
+    });
+  },
+  createOffer: function (body) {
+    return apiCall('POST', '/api/offers', null, body, function () {
+      return { offer: { id: 'OF-' + (Date.now() % 100000).toString().padStart(5, '0'), status: 'sent', buyer_id: body.buyer_id } };
+    });
+  },
+  requestOtp: function (body) {
+    return apiCall('POST', '/api/auth/otp/request', null, body, function () {
+      if (!/^\+91[6-9]\d{9}$/.test(body.phone)) throw new Error('invalid_phone');
+      return authRequest(body.phone, 'sms');
+    });
+  },
+  verifyOtp: function (body) {
+    return apiCall('POST', '/api/auth/otp/verify', null, body, function () {
+      var r = authCheck(body.request_id, body.otp);
+      return { token: 'demo.' + Math.random().toString(36).slice(2), user: { id: 'u_' + tinyHash(r.to), phone: r.to, role: 'farmer' } };
+    });
+  },
+  requestEmailCode: function (body) {
+    return apiCall('POST', '/api/auth/email/request', null, body, function () {
+      if (!/^[^\s@]+@gmail\.com$/.test(body.email)) throw new Error('invalid_email');
+      return authRequest(body.email, 'email');
+    });
+  },
+  verifyEmailCode: function (body) {
+    return apiCall('POST', '/api/auth/email/verify', null, body, function () {
+      var r = authCheck(body.request_id, body.code);
+      return { token: 'demo.' + Math.random().toString(36).slice(2), user: { id: 'u_' + tinyHash(r.to), email: r.to, role: 'farmer' } };
+    });
+  },
+  logout: function () {
+    return apiCall('POST', '/api/auth/logout', null, {}, function () { return { ok: true }; });
+  },
+  colonies: function (p) {
+    return apiCall('GET', '/api/colonies', { district: p.district, lat: p.lat, lng: p.lng, type: p.type }, null, function () {
+      var has = p.lat !== null && p.lat !== undefined && p.lat !== '';
+      var o = has ? [Number(p.lat), Number(p.lng)] : DIST_CENTER[p.district];
+      var rows = Object.keys(CITIES).map(function (id) {
+        var c = CITIES[id];
+        return { id: id, name: c.n[0], name_te: c.n[1], lat: c.lat, lng: c.lng, distance_km: Math.round(hav(o, [c.lat, c.lng])) };
+      }).sort(function (a, b) { return a.distance_km - b.distance_km; });
+      return { district: p.district, type: p.type, is_sample: true, origin: { lat: o[0], lng: o[1], from_gps: has }, nearest: rows[0].id, cities: rows };
+    });
+  },
+  advice: function (p) {
+    return apiCall('GET', '/api/advice', { district: p.district }, null, function () {
+      return {
+        district: p.district, is_sample: true, weights: { margin: 0.4, stability: 0.3, glut: 0.3 },
+        crops: adviceScores(p.district).map(function (x) { return { crop: x.crop, score: x.score, margin_pct: x.margin, stability: x.stab, glut_risk: x.glut }; })
+      };
+    });
+  }
+};
+var AUTH_REQS = {};
+function tinyHash(str) {
+  var h = 5381;
+  for (var i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0;
+  return h.toString(36);
+}
+function authRequest(to, channel) {
+  var id = 'rq_' + Math.random().toString(36).slice(2, 8);
+  var code = String(Math.floor(100000 + Math.random() * 900000));
+  AUTH_REQS[id] = { to: to, code: code, exp: Date.now() + 300000, tries: 0 };
+  return { request_id: id, channel: channel, expires_in_seconds: 300, resend_after_seconds: 30, demo_code: code };
+}
+function authCheck(id, code) {
+  var r = AUTH_REQS[id];
+  if (!r || Date.now() > r.exp) throw new Error('otp_expired');
+  if (r.tries >= 3) throw new Error('too_many_attempts');
+  if (String(code) !== r.code) { r.tries++; throw new Error(r.tries >= 3 ? 'too_many_attempts' : 'invalid_otp'); }
+  delete AUTH_REQS[id];
+  return r;
+}
+var MAP_DEST = {
+  mad: 'Madanapalle Tomato Market, Madanapalle, Andhra Pradesh',
+  ana: 'Anantapur Wholesale Market, Anantapur, Andhra Pradesh',
+  hin: 'Hindupur Market Yard, Hindupur, Andhra Pradesh'
+};
+/* ---- Location: phone GPS first, village name second, else Google Maps uses the phone's own location ---- */
+var MARKET_PT = { mad: [13.5503, 78.5030], ana: [14.6819, 77.6006], hin: [13.8280, 77.4910] };
+var CITIES = {
+  mad: { n: ['Madanapalle', 'మదనపల్లె'], lat: 13.5503, lng: 78.5030 },
+  ana: { n: ['Anantapur', 'అనంతపురం'], lat: 14.6819, lng: 77.6006 },
+  hin: { n: ['Hindupur', 'హిందూపురం'], lat: 13.8280, lng: 77.4910 },
+  kad: { n: ['Kadiri', 'కదిరి'], lat: 14.1117, lng: 78.1596 },
+  put: { n: ['Puttaparthi', 'పుట్టపర్తి'], lat: 14.1650, lng: 77.8110 },
+  ray: { n: ['Rayachoti', 'రాయచోటి'], lat: 14.0570, lng: 78.7520 }
+};
+var DIST_CENTER = { annamayya: [14.0570, 78.7520], anantapuram: [14.6819, 77.6006], sathyasai: [14.1650, 77.8110] };
+function hasLoc() { return !!(state.loc && (state.loc.gps || state.loc.label)); }
+function gpsPt() { return state.loc && state.loc.gps && state.loc.lat != null ? [state.loc.lat, state.loc.lng] : null; }
+function hav(a, b) {
+  var R = 6371, r = Math.PI / 180, dl = (b[0] - a[0]) * r, dg = (b[1] - a[1]) * r;
+  var x = Math.sin(dl / 2) * Math.sin(dl / 2) + Math.cos(a[0] * r) * Math.cos(b[0] * r) * Math.sin(dg / 2) * Math.sin(dg / 2);
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+function saveLoc() { try { if (state.loc) localStorage.setItem('sm-loc', JSON.stringify(state.loc)); else localStorage.removeItem('sm-loc'); } catch (_) {} }
+function loadLoc() {
+  try { var o = JSON.parse(localStorage.getItem('sm-loc') || 'null'); if (o && (o.gps || o.label)) state.loc = o; } catch (_) {}
+}
+function getGPS(ok, fail) {
+  if (!navigator.geolocation) { fail(); return; }
+  try {
+    navigator.geolocation.getCurrentPosition(function (p) { ok([p.coords.latitude, p.coords.longitude]); }, function () { fail(); }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+  } catch (_) { fail(); }
+}
+function gstat(msg) { var el = $('#gstatus'); if (el) el.textContent = msg; }
+function railGps() {
+  gstat(t('gpsWait'));
+  getGPS(function (p) {
+    state.loc = { lat: p[0], lng: p[1], gps: true, label: state.village || '' };
+    saveLoc(); refreshMapLinks(); gstat(t('gpsGot'));
+    if (state.tab === 'compare' || state.tab === 'colonies') renderView();
+  }, function () { gstat(t('gpsFail')); });
+}
+function originStr() {
+  var p = gpsPt();
+  if (p) return p[0].toFixed(6) + ',' + p[1].toFixed(6);
+  var v = (state.village || '').trim();
+  if (v) return v + ', ' + DISTRICTS[state.district][0] + ' district, Andhra Pradesh';
+  return '';
+}
+function dirUrl(dest) {
+  var q = ['api=1', 'destination=' + encodeURIComponent(dest || ''), 'travelmode=driving'];
+  var o = originStr();
+  if (o) q.splice(1, 0, 'origin=' + encodeURIComponent(o));
+  return 'https://www.google.com/maps/dir/?' + q.join('&');
+}
+function mapsUrl(to) { return dirUrl(MAP_DEST[to] || ''); }
+function gLink(dest, label, cls) {
+  return '<a class="btn ' + (cls || 'ghost') + '" data-gmap="1" data-gdest="' + esc(dest) + '" href="' + esc(dirUrl(dest)) + '" target="_blank" rel="noopener noreferrer">' + ICON.pin + esc(label) + '</a>';
+}
+function gpsDist(id) {
+  var p = gpsPt();
+  if (!p || !MARKET_PT[id]) return '';
+  return ' · ' + t('fromYouKm', { k: Math.round(hav(p, MARKET_PT[id])) });
+}
+function mapLink(to, label, cls) {
+  return '<a class="btn ' + (cls || 'ghost') + '" data-gmap="1" data-to="' + to + '" href="' + esc(mapsUrl(to)) + '" target="_blank" rel="noopener noreferrer">' + ICON.pin + esc(label) + '</a>';
+}
+function refreshMapLinks() {
+  document.querySelectorAll('a[data-gmap]').forEach(function (a) { a.setAttribute('href', a.dataset.gdest ? dirUrl(a.dataset.gdest) : mapsUrl(a.dataset.to)); });
+}
+function fromText() {
+  if (!state.village && gpsPt()) return t('gpsLabel');
+  return state.village ? state.village + ', ' + distName() : t('fromVal', { d: distName() });
+}
+function loc(o, k) { return (state.lang === 'te' && o[k + '_te']) ? o[k + '_te'] : o[k]; }
+function cmpParams() { return { crop: state.crop, district: state.district, quantity: state.qty, share: state.share }; }
+function fromCompare(data) {
+  var rows = data.markets.map(function (m) { return { id: m.id, rate: m.rate_per_quintal, km: m.distance_km, gross: m.gross, freight: m.freight, net: m.net }; });
+  function byId(id) { return rows.filter(function (x) { return x.id === id; })[0]; }
+  return { rows: rows, best: byId(data.best_market_id), high: byId(data.highest_rate_market_id), delta: data.extra_take_home };
+}
+
+var rateSeq = 0;
+function renderRates() {
+  var seq = ++rateSeq;
+  var c = state.crop;
+  API.markets({ crop: c }).then(function (data) {
+    if (seq !== rateSeq) return;
+    var rows = data.markets;
+    var rv = rows.map(function (m) { return m.modal_price; });
+    var avg = Math.round(rv.reduce(function (a, b) { return a + b; }, 0) / rv.length);
+    function tiles(hi, av, lo, hs, as, ls) {
+      return '<div class="rate-sum num">' +
+        '<div class="hi"><span class="k">' + esc(t('sumHigh')) + '</span><b>' + inrU(hi) + '</b><span class="m">' + esc(hs) + '</span></div>' +
+        '<div><span class="k">' + esc(t('sumAvg')) + '</span><b>' + inrU(av) + '</b><span class="m">' + esc(as) + '</span></div>' +
+        '<div class="lo"><span class="k">' + esc(t('sumLow')) + '</span><b>' + inrU(lo) + '</b><span class="m">' + esc(ls) + '</span></div></div>';
+    }
+    var sum = '<p class="small" style="margin-bottom:6px">' + esc(t('sumAcross')) + '</p>' +
+      tiles(rv[0], avg, rv[rv.length - 1], L(NAMES[rows[0].id]), t('sumAvgNote', { n: rows.length }), L(NAMES[rows[rows.length - 1].id]));
+    var list = rows.map(function (m, i) {
+      var open = state.openMarket === m.id;
+      var head = '<button type="button" class="rate-row' + (i === 0 ? ' top' : '') + '" data-act="mkt" data-v="' + m.id + '" aria-expanded="' + open + '">' +
+        '<div><b>' + esc(L(NAMES[m.id])) + '</b><span class="small">' + esc(L(STATUS[m.id])) + '</span><span class="small">' + esc(t('src')) + ': ' + esc(L(SOURCE[m.id])) + '</span></div>' +
+        '<div class="rate-val num"><b>' + inrU(m.modal_price) + '</b><span class="small">' + esc(perUnit()) + '</span></div><span class="car" aria-hidden="true">▾</span></button>';
+      var detail = '';
+      if (open) {
+        var pos = m.max_price > m.min_price ? (m.modal_price - m.min_price) / (m.max_price - m.min_price) * 100 : 50;
+        detail = '<div class="mkt-detail"><p class="label" style="margin:0 0 8px">' + esc(t('rangeAt', { m: L(NAMES[m.id]) })) + '</p>' +
+          tiles(m.max_price, m.modal_price, m.min_price, perUnit(), perUnit(), perUnit()) +
+          '<div class="rng" aria-hidden="true"><i style="left:' + pos.toFixed(1) + '%"></i></div>' +
+          '<p class="note">' + esc(t('rangeNote')) + '</p></div>';
+      }
+      return '<li>' + head + detail + '</li>';
+    }).join('');
+    $('#rates').innerHTML = '<h2 class="label">' + esc(t('ratesTitle', { c: cropName(c) })) + '</h2>' + sum +
+      '<p class="note" style="margin-bottom:8px">' + esc(t('tapMarket')) + '</p><ul class="rate-list">' + list + '</ul>' +
+      '<p class="note" style="margin-top:8px">' + esc(t('ratesHint')) + '</p>';
+  }, function () {
+    if (seq === rateSeq) $('#rates').innerHTML = '<div class="empty">' + esc(t('apiError')) + '</div>';
+  });
+}
+function renderTabs() {
+  var tabs = [['compare', 'tabCompare'], ['trucks', 'tabTrucks'], ['buyers', 'tabBuyers'], ['colonies', 'tabColonies'], ['advice', 'tabAdvice']];
+  $('#tablist').innerHTML = tabs.map(function (x) {
+    return '<button type="button" class="tab" role="tab" data-act="tab" data-v="' + x[0] + '" aria-selected="' + (state.tab === x[0]) + '">' + esc(t(x[1])) + '</button>';
+  }).join('');
+}
+
+function howBox(r) {
+  var seen = {};
+  var show = [r.high, r.best].filter(function (x) { if (seen[x.id]) return false; seen[x.id] = true; return true; });
+  var ex = show.map(function (x) {
+    return '<p class="num"><b>' + esc(L(NAMES[x.id])) + ':</b> ' + inr(x.gross) + ' − ' + inr(x.freight) + ' = <b>' + inr(x.net) + '</b></p>';
+  }).join('');
+  return '<details class="how" open><summary>' + esc(t('howTitle')) + '</summary><div class="body">' +
+    '<p class="formula">' + esc(t('howFormula')) + '</p>' +
+    '<ul><li>' + esc(t('howRank')) + '</li><li>' + esc(t('howBar')) + '</li><li>' + esc(t('howBook')) + '</li><li>' + esc(t('howFees')) + '</li></ul>' +
+    '<div class="ex"><span class="small">' + esc(t('howEx')) + ' · ' + esc(qtyLabel(state.qty)) + ' · ' + esc(cropName(state.crop)) + '</span>' + ex + '</div></div></details>';
+}
+function routeSrc(dest) {
+  var o = originStr();
+  return 'https://maps.google.com/maps?' + (o ? 'saddr=' + encodeURIComponent(o) + '&daddr=' + encodeURIComponent(dest) : 'q=' + encodeURIComponent(dest)) + '&output=embed';
+}
+function routeCard(bestId) {
+  var ids = ['mad', 'ana', 'hin'];
+  var sel = (state.mapMkt && ids.indexOf(state.mapMkt) >= 0) ? state.mapMkt : (ids.indexOf(bestId) >= 0 ? bestId : 'mad');
+  var title = t('routeMapTitle', { m: L(NAMES[sel]) });
+  return '<section class="card" style="display:grid;gap:10px"><h2 class="label" style="margin:0">' + esc(title) + '</h2>' +
+    '<div class="chips two" role="group" aria-label="' + esc(title) + '">' + ids.map(function (m) {
+      return '<button type="button" class="chip" data-act="rmap" data-v="' + m + '" aria-pressed="' + (m === sel) + '">' + esc(L(NAMES[m])) + '</button>';
+    }).join('') + '</div>' +
+    (originStr() ? '' : '<p class="note">' + esc(t('routeSet')) + '</p>') +
+    '<iframe class="mapframe" title="' + esc(title) + '" src="' + esc(routeSrc(MAP_DEST[sel])) + '" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>' +
+    '<div class="acts">' + mapLink(sel, t('openMaps'), 'ghost') + '</div></section>';
+}
+function viewCompare(data) {
+  var r = fromCompare(data);
+  var maxGross = Math.max.apply(null, r.rows.map(function (x) { return x.gross; }));
+  var delta = r.best.id === r.high.id
+    ? t('alsoHighest')
+    : t('moreThan', { x: inr(r.delta), m: L(NAMES[r.high.id]) });
+  var h = '<div class="hero"><p class="eyebrow">' + esc(t('bestFor')) + '</p><h2>' + esc(L(NAMES[r.best.id])) + '</h2>' +
+    '<p class="big"><b class="num">' + inr(r.best.net) + '</b><span>' + esc(t('takeHome', { q: qtyLabel(state.qty) })) + '</span></p>' +
+    '<p class="delta">' + esc(delta) + ' ' + esc(t('whyNet')) + '</p></div>';
+  h += routeCard(r.best.id);
+  h += howBox(r);
+  h += '<div class="legend"><span><i style="background:var(--good)"></i>' + esc(t('legNet')) + '</span><span><i style="background:var(--warn)"></i>' + esc(t('legFreight')) + '</span></div>';
+  h += '<ol class="list">' + r.rows.map(function (x, i) {
+    var badges = '';
+    if (i === 0) badges += '<span class="badge best">' + esc(t('badgeBest')) + '</span>';
+    if (x.id === r.high.id) badges += '<span class="badge high">' + esc(t('badgeHigh')) + '</span>';
+    var nW = (x.net / maxGross * 100).toFixed(1), fW = (x.freight / maxGross * 100).toFixed(1);
+    var action = x.id === 'vil'
+      ? '<span class="small">' + esc(t('localPickup')) + '</span>'
+      : '<span class="acts">' + mapLink(x.id, t('directions'), 'ghost') + '<button type="button" class="btn" data-act="book" data-v="' + x.id + '">' + ICON.truck + esc(t('bookTruck')) + '</button></span>';
+    return '<li class="card mk' + (i === 0 ? ' best' : '') + '">' +
+      '<div class="mk-head"><span class="rank num">' + (i + 1) + '</span><div class="mk-title"><h3>' + esc(L(NAMES[x.id])) + '</h3>' +
+      '<p class="mk-meta num">' + x.km + ' ' + esc(t('km')) + ' · ' + esc(L(STATUS[x.id])) + esc(gpsDist(x.id)) + '</p>' +
+      (badges ? '<div class="badges">' + badges + '</div>' : '') + '</div></div>' +
+      '<div class="bar" role="img" aria-label="' + esc(t('lblNet') + ' ' + inr(x.net) + ', ' + t('lblFreight') + ' ' + inr(x.freight)) + '"><i class="n" style="width:' + nW + '%"></i><i class="f" style="width:' + fW + '%"></i></div>' +
+      '<dl class="stats num"><div><dt>' + esc(rateLbl()) + '</dt><dd>' + inrU(x.rate) + '</dd></div>' +
+      '<div><dt>' + esc(t('lblGross')) + '</dt><dd>' + inr(x.gross) + '</dd></div>' +
+      '<div><dt>' + esc(t('lblFreight')) + '</dt><dd>' + inr(x.freight) + '</dd></div>' +
+      '<div class="net"><dt>' + esc(t('lblNet')) + '</dt><dd>' + inr(x.net) + '</dd></div></dl>' +
+      '<div class="mk-foot"><span class="small">' + esc(t('src')) + ': ' + esc(L(SOURCE[x.id])) + ' · ' + esc(I.sampleBadge[state.lang === 'te' ? 1 : 0]) + '</span>' + action + '</div></li>';
+  }).join('') + '</ol>';
+  h += '<p class="note">' + esc(t('freightNote')) + ' ' + esc(t('mapsNote')) + '</p>';
+  return h;
+}
+
+function loadTrucks() {
+  return API.compare(cmpParams()).then(function (cmp) {
+    var dest = (state.dest && state.dest !== 'vil') ? state.dest : cmp.markets.filter(function (x) { return x.id !== 'vil'; })[0].id;
+    return API.trucks({ crop: state.crop, district: state.district, to: dest, quantity: state.qty, share: state.share }).then(function (trk) {
+      state.lastTrucks = trk; state.lastDest = dest;
+      return trk;
+    });
+  });
+}
+function viewTrucks(trk) {
+  var dest = trk.to;
+  var quotes = trk.trucks;
+  var feasible = quotes.filter(function (q) { return q.fits; }).sort(function (a, b) { return a.freight_total - b.freight_total; });
+  var cheapest = feasible.length ? feasible[0].id : null;
+  if (state.truck === null || !quotes.some(function (q) { return q.id === state.truck && q.fits; })) state.truck = cheapest;
+  var sel = quotes.filter(function (q) { return q.id === state.truck; })[0];
+  var km = trk.distance_km;
+
+  if (state.booked) {
+    var b = state.booked;
+    var h = '<div class="ok"><h2>' + ICON.check + esc(t('booked')) + '</h2>' +
+      '<dl class="kv num"><dt>' + esc(t('ref')) + '</dt><dd>' + esc(b.ref) + '</dd>' +
+      '<dt>' + esc(t('route')) + '</dt><dd>' + esc(b.pickup_village ? b.pickup_village + ', ' + L(DISTRICTS[b.district]) : t('fromVal', { d: L(DISTRICTS[b.district]) })) + ' → ' + esc(L(NAMES[b.to])) + '</dd>' +
+      '<dt>' + esc(t('crop')) + '</dt><dd>' + esc(t('loadLine', { q: qtyLabel(b.quantity_quintals), c: cropName(b.crop) })) + '</dd>' +
+      '<dt>' + esc(t('truck')) + '</dt><dd>' + esc(loc(b.truck, 'name') + ' · ' + loc(b.truck, 'vehicle')) + '</dd>' +
+      (state.user ? '<dt>' + esc(t('bookedBy')) + '</dt><dd>' + esc(maskUser(state.user)) + '</dd>' : '') +
+      '<dt>' + esc(b.shared ? t('yourShare') : t('freightLbl')) + '</dt><dd>' + inr(b.freight_total) + '</dd></dl>' +
+      '<p><b>' + esc(t('payTitle')) + ':</b> ' + esc(t('payNote')) + '</p>' +
+      '<p class="small">' + esc(t('bookedNote')) + '</p>' +
+      '<div class="acts">' + mapLink(b.to, t('openMaps'), 'ghost') + '<button type="button" class="btn ghost" data-act="rebook">' + esc(t('newBooking')) + '</button></div></div>';
+    return h;
+  }
+
+  var opts = MARKETS.filter(function (m) { return m !== 'vil'; }).map(function (m) {
+    return '<option value="' + m + '"' + (m === dest ? ' selected' : '') + '>' + esc(L(NAMES[m])) + '</option>';
+  }).join('');
+  var h2 = '<section class="card route"><h2 class="label" style="margin:0">' + esc(t('route')) + '</h2>' +
+    '<div class="route-line"><div><span class="small">' + esc(t('from')) + '</span><br><b>' + esc(fromText()) + '</b></div><span class="arrow" aria-hidden="true">→</span>' +
+    '<div class="field" style="flex:1 1 220px"><label class="small" for="dest">' + esc(t('to')) + '</label><select id="dest" data-field="dest">' + opts + '</select></div></div>' +
+    '<p class="small num">' + esc(t('loadLine', { q: qtyLabel(state.qty), c: cropName(state.crop) })) + ' · ' + km + ' ' + esc(t('km')) + '</p>' + mapLink(dest, t('openMaps'), 'ghost') + '</section>';
+  h2 += '<h2 class="label" style="margin:0">' + esc(t('nearby')) + '</h2><div class="list" role="radiogroup" aria-label="' + esc(t('nearby')) + '">' + quotes.map(function (q) {
+    var checked = q.id === state.truck;
+    var tag = q.id === cheapest ? '<span class="badge best">' + esc(t('lowest')) + '</span>' : '';
+    var msg = q.fits ? '' : '<p class="small" style="color:var(--warn);font-weight:700">' + esc(t('tooSmall', { q: qtyLabel(state.qty) })) + '</p>';
+    return '<div class="card tk" role="radio" tabindex="0" data-act="pick" data-v="' + q.id + '" aria-checked="' + checked + '" aria-disabled="' + (!q.fits) + '">' +
+      '<div class="tk-head"><div><h3>' + esc(loc(q, 'name')) + ' · ' + esc(loc(q, 'vehicle')) + '</h3>' +
+      '<p class="mk-meta num">' + esc(t('capacity')) + ' ' + esc(capText(q.capacity_quintals)) + ' · ' + q.km_away + ' ' + esc(t('km')) + ' ' + esc(t('away')) + '</p>' +
+      '<p class="ver">' + ICON.shield + esc(t('verified')) + '</p></div>' +
+      '<div class="price num"><b>' + inr(q.freight_total) + '</b><span class="small">' + inrU(q.rate_per_quintal) + ' ' + esc(perUnit()) + '</span></div></div>' +
+      (tag ? '<div class="badges">' + tag + '</div>' : '') + msg + '</div>';
+  }).join('') + '</div>';
+  h2 += '<section class="card confirm"><p class="small">' + esc(state.share ? t('yourShare') : t('total')) + '</p>' +
+    '<p class="num" style="font-family:var(--font-display);font-size:26px;font-weight:700">' + (sel ? inr(sel.freight_total) : '—') + '</p>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:10px">' +
+    '<button type="button" class="btn" data-act="confirm"' + (sel ? '' : ' disabled') + '>' + ICON.truck + esc(t('confirmOnline')) + '</button>' +
+    '<button type="button" class="btn ghost" data-act="call"' + (sel ? '' : ' disabled') + '>' + esc(t('callOwner')) + '</button></div>' +
+    (state.called && sel ? '<p class="ver">' + ICON.shield + esc(t('callbackDone')) + '</p>' : '') +
+    '<p class="privnote">' + ICON.shield + '<span>' + esc(t('numPrivate')) + '</span></p>' +
+    '</section>';
+  return h2;
+}
+
+function viewBuyers(data) {
+  var type = state.buyerType;
+  var list = data.buyers;
+  var h = '<div class="subtabs">' + ['society', 'restaurant'].map(function (x) {
+    return '<button type="button" class="subtab" data-act="btype" data-v="' + x + '" aria-pressed="' + (type === x) + '">' + esc(t(x)) + '</button>';
+  }).join('') + '</div>';
+  h += '<p class="note">' + esc(t(type === 'society' ? 'introSociety' : 'introRestaurant')) + '</p>';
+  if (!list.length) return h + '<div class="empty">' + esc(t('noBuyers', { c: cropName(state.crop) })) + '</div>';
+  h += '<div class="list">' + list.map(function (b) {
+    var plus = b.price_per_quintal - data.village_trader_rate;
+    var done = state.offered[b.id];
+    return '<div class="card by"><div class="by-top"><div><h3>' + esc(loc(b, 'name')) + ' · ' + esc(loc(b, 'place')) + '</h3>' +
+      '<p class="mk-meta">' + esc(loc(b, 'demand')) + '</p></div>' +
+      '<div class="price num"><b>' + inrU(b.price_per_quintal) + '</b><span class="small">' + esc(perUnit()) + '</span></div></div>' +
+      '<p class="plus num">' + esc(t('vsTrader', { x: inrU(plus), u: perUnit() })) + '</p>' +
+      '<div class="mk-foot"><span class="small">' + esc(t('sampleBuyer')) + '</span>' +
+      (done ? '<span class="ver">' + ICON.shield + esc(t('offered')) + '</span>' : '<button type="button" class="btn" data-act="offer" data-v="' + b.id + '">' + esc(t('offerBtn')) + '</button>') +
+      '</div></div>';
+  }).join('') + '</div>';
+  return h;
+}
+
+function viewColonies(data) {
+  var gp = gpsPt();
+  var typeQ = { colony: 'housing colony', apt: 'apartments', gated: 'gated community' };
+  var typeK = { colony: 'colColony', apt: 'colApt', gated: 'colGated' };
+  var sel = state.colCity;
+  var known = data.cities.some(function (c) { return c.id === sel; });
+  if (sel === 'me' && !gp) sel = 'auto';
+  if (sel !== 'me' && !known) sel = gp ? 'me' : data.nearest;
+  var cityObj = data.cities.filter(function (c) { return c.id === sel; })[0];
+  var q, ll, z;
+  if (sel === 'me') { q = typeQ[state.colType] + ' near ' + gp[0].toFixed(5) + ',' + gp[1].toFixed(5); ll = gp[0] + ',' + gp[1]; z = 14; }
+  else { q = typeQ[state.colType] + ' in ' + cityObj.name + ', Andhra Pradesh'; ll = cityObj.lat + ',' + cityObj.lng; z = 13; }
+  var embed = 'https://maps.google.com/maps?q=' + encodeURIComponent(q) + '&ll=' + ll + '&z=' + z + '&output=embed';
+  var open = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+  var orig = gp ? t('colOrigGps') : t('colOrigDist', { d: distName() });
+  var h = '<section class="card" style="display:grid;gap:8px"><h2 style="font-size:20px">' + esc(t('colTitle')) + '</h2><p class="note">' + esc(t('colIntro')) + '</p></section>';
+  h += '<div class="subtabs">' + ['colony', 'apt', 'gated'].map(function (x) {
+    return '<button type="button" class="subtab" data-act="ctype" data-v="' + x + '" aria-pressed="' + (state.colType === x) + '">' + esc(t(typeK[x])) + '</button>';
+  }).join('') + '</div>';
+  h += '<div class="chips two" role="group" aria-label="' + esc(t('colTitle')) + '">' + (gp ? '<button type="button" class="chip" data-act="ccity" data-v="me" aria-pressed="' + (sel === 'me') + '">' + esc(t('colNearMe')) + '</button>' : '') +
+    data.cities.map(function (c) {
+      return '<button type="button" class="chip" data-act="ccity" data-v="' + c.id + '" aria-pressed="' + (sel === c.id) + '">' + esc(loc(c, 'name')) + '</button>';
+    }).join('') + '</div>';
+  h += '<iframe class="mapframe" title="' + esc(t('colMapTitle')) + '" src="' + esc(embed) + '" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>';
+  h += '<div class="acts"><a class="btn" href="' + esc(open) + '" target="_blank" rel="noopener noreferrer">' + ICON.pin + esc(t('colOpen')) + '</a></div>';
+  if (cityObj) {
+    var rt = t('colRouteTitle', { c: loc(cityObj, 'name') });
+    h += '<h2 class="label" style="margin:6px 0 0">' + esc(rt) + '</h2>' + (originStr() ? '' : '<p class="note">' + esc(t('routeSet')) + '</p>') +
+      '<iframe class="mapframe" title="' + esc(rt) + '" src="' + esc(routeSrc(cityObj.lat + ',' + cityObj.lng)) + '" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>';
+  }
+  if (!gp) h += '<p class="note">' + esc(t('colNoGps')) + '</p>';
+  h += '<ul class="list" style="padding:0;margin:0">' + data.cities.map(function (c) {
+    return '<li class="card by"><div class="by-top"><div><h3>' + esc(loc(c, 'name')) + (c.id === data.nearest ? ' <span class="badge best">' + esc(t('colNearest')) + '</span>' : '') + '</h3>' +
+      '<p class="mk-meta num">' + esc(t('colKm', { k: c.distance_km, o: orig })) + '</p></div></div>' +
+      '<div class="acts"><button type="button" class="btn ghost" data-act="ccity" data-v="' + c.id + '">' + esc(t('colShow')) + '</button>' + gLink(c.lat + ',' + c.lng, t('directions'), 'ghost') + '</div></li>';
+  }).join('') + '</ul>';
+  h += '<p class="note">' + esc(t('colNote')) + '</p>';
+  return h;
+}
+function viewAdvice(data) {
+  var sc = data.crops.map(function (x) { return { crop: x.crop, score: x.score, margin: x.margin_pct, stab: x.stability, glut: x.glut_risk }; });
+  var top = sc[0];
+  function risk(g) { return g < 35 ? ['low', 'low'] : g < 60 ? ['med', 'med'] : ['high', 'high']; }
+  var h = '<section class="rec"><p class="eyebrow" style="color:var(--primary)">' + esc(t('adviceWhy')) + '</p><h2>' + esc(t('adviceTitle', { d: distName() })) + '</h2>' +
+    '<p class="num" style="font-family:var(--font-display);font-size:30px;font-weight:700">' + esc(cropName(top.crop)) + '</p>' +
+    '<p class="small num">' + esc(t('score', { s: top.score })) + ' · ' + esc(t('glut')) + ': ' + esc(t(risk(top.glut)[0])) + '</p></section>';
+  h += '<section class="card"><h2 class="label">' + esc(t('allCrops', { d: distName() })) + '</h2>' + sc.map(function (x) {
+    var rk = risk(x.glut);
+    return '<div class="crop-row"><div><p class="nm">' + esc(cropName(x.crop)) + '</p>' +
+      '<p class="small num">' + esc(t('stability')) + ' ' + x.stab + ' · ' + esc(t('score', { s: x.score })) + '</p></div>' +
+      '<span class="risk ' + rk[1] + '">' + esc(t('glut')) + ': ' + esc(t(rk[0])) + '</span></div>';
+  }).join('') + '</section>';
+  var byMargin = sc.slice().sort(function (a, b) { return b.margin - a.margin; }).slice(0, 12);
+  h += '<section class="card"><h2 class="label">' + esc(t('marginChart')) + '</h2><div style="display:grid;gap:10px">' + byMargin.map(function (x) {
+    return '<div class="mbar' + (x.crop === top.crop ? ' top' : '') + '"><span>' + esc(cropName(x.crop)) + '</span><span class="track"><i style="width:' + (x.margin / 40 * 100) + '%"></i></span><b class="num">' + x.margin + '</b></div>';
+  }).join('') + '</div></section>';
+  h += '<div class="callout">' + esc(t('glutText')) + '</div><p class="note">' + esc(t('scoreNote')) + '</p>';
+  return h;
+}
+
+var viewSeq = 0;
+function renderView() {
+  var seq = ++viewSeq;
+  var box = $('#view');
+  if (!box.dataset.ready) box.innerHTML = '<p class="note">' + esc(t('loading')) + '</p>';
+  var job;
+  if (state.tab === 'trucks') job = loadTrucks().then(viewTrucks);
+  else if (state.tab === 'buyers') job = API.buyers({ crop: state.crop, type: state.buyerType }).then(viewBuyers);
+  else if (state.tab === 'colonies') { var gp = gpsPt(); job = API.colonies({ district: state.district, lat: gp ? gp[0] : null, lng: gp ? gp[1] : null, type: state.colType }).then(viewColonies); }
+  else if (state.tab === 'advice') job = API.advice({ district: state.district }).then(viewAdvice);
+  else job = API.compare(cmpParams()).then(viewCompare);
+  job.then(function (html) {
+    if (seq !== viewSeq) return;
+    box.innerHTML = html; box.dataset.ready = '1';
+  }, function () {
+    if (seq !== viewSeq) return;
+    box.innerHTML = '<div class="empty">' + esc(t('apiError')) + '</div>';
+  });
+}
+function renderAll() { renderChips(); renderRates(); renderTabs(); renderView(); }
+function resetBooking() { state.booked = null; state.called = false; state.copied = false; }
+
+function setCrop(c) {
+  state.crop = c; state.truck = null; resetBooking(); renderChips(); renderRates(); renderView();
+}
+function matchCrop(txt) {
+  var s = String(txt || '').toLowerCase().trim();
+  if (s.length < 2) return null;
+  var ids = Object.keys(CROPS);
+  for (var i = 0; i < ids.length; i++) {
+    var al = CROPS[ids[i]].al;
+    for (var j = 0; j < al.length; j++) {
+      var a = al[j].toLowerCase();
+      if (a.indexOf(s) === 0 || s.indexOf(a) !== -1) return ids[i];
+    }
+  }
+  return null;
+}
+function say(msg) { $('#vstatus').textContent = msg; }
+function startVoice() {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { say(t('vUnsupported')); return; }
+  var mic = $('#mic');
+  try {
+    var r = new SR();
+    r.lang = state.lang === 'te' ? 'te-IN' : 'en-IN';
+    r.interimResults = false;
+    r.maxAlternatives = 3;
+    say(t('vListening'));
+    mic.classList.add('live');
+    r.onresult = function (e) {
+      var txt = Array.prototype.map.call(e.results[0], function (a) { return a.transcript; }).join(' ');
+      $('#q').value = txt;
+      var id = matchCrop(txt);
+      if (id && cropsHere().indexOf(id) >= 0) { setCrop(id); say(t('vSelected', { c: cropName(id) })); } else if (id) { say(t('vNotHere', { c: cropName(id), d: distName() })); } else { say(t('vNoMatch')); }
+    };
+    r.onerror = function () { say(t('vUnsupported')); mic.classList.remove('live'); };
+    r.onend = function () { mic.classList.remove('live'); };
+    r.start();
+  } catch (err) { say(t('vUnsupported')); mic.classList.remove('live'); }
+}
+function setQty(n, typing) {
+  var mul = state.unit === 'kg' ? 0.01 : 1;
+  var requested = (Number(n) || 0) * mul;
+  var q = Math.round(Math.max(0.1, Math.min(40, requested)) * 100) / 100;
+  state.qty = q; state.truck = null; resetBooking();
+  if (!typing || Math.abs(requested - q) > 0.0001) $('#qty').value = qtyIn();
+  renderView();
+}
+function stepQty(dir) {
+  var cur = qtyIn();
+  var step = state.unit === 'kg' ? (cur >= 100 ? 50 : 10) : (cur > 1 ? 1 : 0.1);
+  setQty(cur + dir * step);
+}
+function setUnit(u) {
+  state.unit = u;
+  document.querySelectorAll('[data-act="unit"]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.v === u)); });
+  $('#qty').value = qtyIn();
+  resetBooking();
+  renderRates();
+  renderView();
+}
+function goTrucks() {
+  state.tab = 'trucks'; renderTabs(); renderView();
+  var el = $('#tabs');
+  var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (el && el.scrollIntoView) el.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
+}
+
+/* ---- Farmer sign-in (demo): mobile OTP or Gmail code ---- */
+var LG = { open: false, step: 'id', method: 'phone', phone: '', email: '', target: '', reqId: null, code: '', demo: '', error: '', busy: false, resendAt: 0, after: null, opener: null };
+var lgTimer = null;
+function maskUser(u) {
+  if (u.phone) { var d = u.phone.replace(/\D/g, '').slice(-10); return '+91 ' + d.slice(0, 2) + '••• ••' + d.slice(-3); }
+  if (u.email) { return u.email.slice(0, 2) + '•••@gmail.com'; }
+  return '';
+}
+function saveUser() {
+  try { if (state.user) localStorage.setItem('sm-user', JSON.stringify({ user: state.user, token: state.token })); else localStorage.removeItem('sm-user'); } catch (_) {}
+}
+function loadUser() {
+  try {
+    var raw = localStorage.getItem('sm-user');
+    if (!raw) return;
+    var o = JSON.parse(raw);
+    if (o && o.user && o.user.id) { state.user = o.user; state.token = o.token || null; }
+  } catch (_) {}
+}
+function renderAuth() {
+  var box = $('#authBox');
+  if (!box) return;
+  box.innerHTML = state.user
+    ? '<span class="who num">' + esc(maskUser(state.user)) + '</span><button type="button" class="signin out" data-act="logout">' + esc(t('signOut')) + '</button>'
+    : '<button type="button" class="signin" data-act="login-open">' + esc(t('signIn')) + '</button>';
+}
+function requireLogin(fn) {
+  if (state.user && hasLoc()) { fn(); return; }
+  if (state.user) { openLogin(fn, true); return; }
+  openLogin(fn);
+}
+function openLogin(after, locOnly) {
+  LG = { open: true, step: 'id', method: 'phone', phone: '', email: '', target: '', reqId: null, code: '', demo: '', error: '', busy: false, resendAt: 0, after: after || null, opener: document.activeElement, village: state.village || '', gps: gpsPt(), gpsMsg: '', pending: null };
+  if (locOnly) { LG.step = 'loc'; LG.pending = { user: state.user, token: state.token }; }
+  renderLogin();
+  if (lgTimer) clearInterval(lgTimer);
+  lgTimer = setInterval(tickResend, 1000);
+}
+function closeLogin() {
+  var op = LG.opener;
+  LG.open = false; LG.after = null;
+  if (lgTimer) { clearInterval(lgTimer); lgTimer = null; }
+  $('#login').hidden = true;
+  if (op && op.focus) { try { op.focus(); } catch (_) {} }
+}
+function tickResend() {
+  var b = $('#lgResend');
+  if (!b) return;
+  var left = Math.max(0, Math.ceil((LG.resendAt - Date.now()) / 1000));
+  b.disabled = left > 0;
+  b.textContent = left > 0 ? t('resendIn', { s: left }) : t('resend');
+}
+function cleanPhone(v) { return String(v || '').replace(/\D/g, '').replace(/^91(?=\d{10}$)/, '').replace(/^0(?=\d{10}$)/, ''); }
+function errText(e) {
+  var m = String(e && e.message || '');
+  if (m === 'invalid_otp') return t('errOtp');
+  if (m === 'otp_expired') return t('errExpired');
+  if (m === 'too_many_attempts') return t('errTries');
+  if (m === 'invalid_phone') return t('errPhone');
+  if (m === 'invalid_email') return t('errEmail');
+  return t('apiError');
+}
+function renderLogin() {
+  var m = $('#login');
+  m.hidden = !LG.open;
+  if (!LG.open) return;
+  $('#loginTitle').textContent = t(LG.step === 'loc' ? 'locTitle' : 'loginTitle');
+  var isPhone = LG.method === 'phone';
+  var h = '<p class="note">' + esc(t('loginWhy')) + '</p>';
+  if (LG.step === 'id') {
+    h += '<div class="seg alt" role="group" aria-label="' + esc(t('loginTitle')) + '" style="justify-self:start">' +
+      '<button type="button" data-act="lg-method" data-v="phone" aria-pressed="' + isPhone + '">' + esc(t('viaPhone')) + '</button>' +
+      '<button type="button" data-act="lg-method" data-v="gmail" aria-pressed="' + (!isPhone) + '">' + esc(t('viaGmail')) + '</button></div>';
+    if (isPhone) {
+      h += '<div class="field"><label class="label" for="lgId">' + esc(t('phoneLbl')) + '</label><div class="pfx"><span class="cc num">+91</span>' +
+        '<input type="text" id="lgId" inputmode="numeric" autocomplete="tel-national" maxlength="12" value="' + esc(LG.phone) + '" placeholder="98765 43210"></div></div>';
+    } else {
+      h += '<div class="field"><label class="label" for="lgId">' + esc(t('emailLbl')) + '</label>' +
+        '<input type="text" id="lgId" inputmode="email" autocomplete="email" value="' + esc(LG.email) + '" placeholder="name@gmail.com"></div>';
+    }
+    if (LG.error) h += '<p class="err" role="alert">' + esc(LG.error) + '</p>';
+    h += '<button type="button" class="btn" data-primary="1" data-act="lg-send"' + (LG.busy ? ' disabled' : '') + '>' + esc(t(isPhone ? 'sendOtp' : 'sendCode')) + '</button>';
+  } else if (LG.step === 'loc') {
+    h = '<p class="note">' + esc(t('locWhy')) + '</p>' +
+      '<button type="button" class="btn" data-act="lg-gps">' + ICON.pin + esc(t('useGps')) + '</button>' +
+      '<p class="status" role="status" aria-live="polite">' + esc(LG.gpsMsg || '') + '</p>' +
+      '<div class="field"><label class="label" for="lgVillage">' + esc(t('orTypeVillage')) + '</label>' +
+      '<input type="text" id="lgVillage" maxlength="60" autocomplete="off" value="' + esc(LG.village || '') + '" placeholder="' + esc(t('villagePh')) + '"></div>';
+    if (LG.error) h += '<p class="err" role="alert">' + esc(LG.error) + '</p>';
+    h += '<button type="button" class="btn" data-primary="1" data-act="lg-loc">' + esc(t('locContinue')) + '</button>';
+  } else {
+    var shown = isPhone ? '+91 ' + LG.target : LG.target;
+    h += '<div class="sent"><span class="num">' + esc(t('sentTo', { to: shown })) + '</span><button type="button" class="linkbtn" data-act="lg-change">' + esc(t('change')) + '</button></div>';
+    if (LG.demo) h += '<div class="demo-code"><span>' + esc(t('demoCode')) + '</span><b class="num">' + esc(LG.demo) + '</b><span class="small">' + esc(t('demoCodeNote')) + '</span></div>';
+    h += '<div class="field"><label class="label" for="lgCode">' + esc(t(isPhone ? 'otpLbl' : 'codeLbl')) + '</label>' +
+      '<input type="text" id="lgCode" class="otp-input num" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="' + esc(LG.code) + '"></div>';
+    if (LG.error) h += '<p class="err" role="alert">' + esc(LG.error) + '</p>';
+    h += '<button type="button" class="btn" data-primary="1" data-act="lg-verify"' + (LG.busy ? ' disabled' : '') + '>' + esc(t('verify')) + '</button>' +
+      '<button type="button" class="btn ghost" id="lgResend" data-act="lg-resend"></button>';
+  }
+  h += '<p class="small">' + esc(t('demoLogin')) + ' ' + esc(t('farmersOnly')) + '</p>';
+  $('#loginBody').innerHTML = h;
+  tickResend();
+  var f = $('#lgCode') || $('#lgId');
+  if (f && f.focus) f.focus();
+}
+function lgSend() {
+  if (LG.busy) return;
+  var isPhone = LG.method === 'phone';
+  var id = isPhone ? cleanPhone(LG.phone) : LG.email.trim().toLowerCase();
+  var ok = isPhone ? /^[6-9]\d{9}$/.test(id) : /^[^\s@]+@gmail\.com$/.test(id);
+  if (!ok) { LG.error = t(isPhone ? 'errPhone' : 'errEmail'); renderLogin(); return; }
+  LG.busy = true; LG.error = ''; renderLogin();
+  var call = isPhone ? API.requestOtp({ phone: '+91' + id }) : API.requestEmailCode({ email: id });
+  call.then(function (r) {
+    LG.busy = false; LG.step = 'code'; LG.reqId = r.request_id; LG.demo = r.demo_code || '';
+    LG.resendAt = Date.now() + (r.resend_after_seconds || 30) * 1000; LG.target = id; LG.code = ''; LG.error = '';
+    renderLogin();
+  }, function (e) { LG.busy = false; LG.error = errText(e); renderLogin(); });
+}
+function lgVerify() {
+  if (LG.busy) return;
+  var code = String(LG.code || '').replace(/\D/g, '');
+  if (code.length !== 6) { LG.error = t('errOtp'); renderLogin(); return; }
+  LG.busy = true; LG.error = ''; renderLogin();
+  var call = LG.method === 'phone' ? API.verifyOtp({ request_id: LG.reqId, otp: code }) : API.verifyEmailCode({ request_id: LG.reqId, code: code });
+  call.then(function (r) {
+    LG.busy = false; LG.pending = { user: r.user, token: r.token };
+    LG.step = 'loc'; LG.error = ''; renderLogin();
+  }, function (e) { LG.busy = false; LG.error = errText(e); LG.code = ''; renderLogin(); });
+}
+function lgGps() {
+  LG.gpsMsg = t('gpsWait'); renderLogin();
+  getGPS(function (p) { LG.gps = p; LG.gpsMsg = t('gpsGot'); LG.error = ''; renderLogin(); }, function () { LG.gpsMsg = t('gpsFail'); renderLogin(); });
+}
+function lgLocDone() {
+  var v = String(LG.village || '').trim();
+  if (!LG.gps && v.length < 2) { LG.error = t('errLoc'); renderLogin(); return; }
+  state.village = v; $('#village').value = v;
+  try { localStorage.setItem('sm-village', v); } catch (_) {}
+  state.loc = LG.gps ? { lat: LG.gps[0], lng: LG.gps[1], gps: true, label: v } : { gps: false, label: v };
+  saveLoc();
+  state.user = LG.pending.user; state.token = LG.pending.token; saveUser();
+  var after = LG.after;
+  closeLogin(); renderAuth(); refreshMapLinks();
+  gstat(LG.gps ? t('gpsGot') : '');
+  if (after) after(); else renderView();
+}
+function signOut() {
+  API.logout().then(function () {}, function () {});
+  state.user = null; state.token = null; saveUser(); renderAuth(); resetBooking(); renderView();
+}
+/* ---- Owner panel: driver phone numbers live only here, never in any farmer-facing screen or API response ---- */
+var AD = { open: false, step: 'pin', err: '', ok: '' };
+function lsGet(k, d) { try { var r = localStorage.getItem(k); return r ? JSON.parse(r) : d; } catch (_) { return d; } }
+function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} }
+function loadExtraTrucks() {
+  lsGet('sm-extra-trucks', []).forEach(function (x) {
+    if (TRUCKS[x.district]) TRUCKS[x.district].push({ id: x.id, name: [x.name, x.name], veh: [x.veh, x.veh], cap: x.cap, km: x.km, f: x.f });
+  });
+}
+function pinHash(p) { return tinyHash('sm-owner|' + p); }
+function allTrucks() {
+  var out = [];
+  Object.keys(TRUCKS).forEach(function (d) { TRUCKS[d].forEach(function (x) { out.push({ d: d, t: x }); }); });
+  return out;
+}
+function openAdmin() {
+  AD = { open: true, step: lsGet('sm-owner-pin', null) ? 'pin' : 'setpin', err: '', ok: '' };
+  renderAdmin();
+}
+function closeAdmin() { AD.open = false; AD.step = 'pin'; $('#admin').hidden = true; }
+function logOwner(kind, r) {
+  var list = lsGet('sm-requests', []);
+  var gp = gpsPt();
+  list.unshift({ kind: kind, at: new Date().toISOString(), ref: r.ref || '', crop: r.crop, to: r.to, qty: r.qty, truckId: r.truckId, district: r.district, freight: r.freight || 0,
+    farmer: state.user ? (state.user.phone || state.user.email || '') : '', village: state.village || '', lat: gp ? gp[0] : null, lng: gp ? gp[1] : null });
+  lsSet('sm-requests', list.slice(0, 100));
+}
+function renderAdmin() {
+  var m = $('#admin');
+  m.hidden = !AD.open;
+  if (!AD.open) return;
+  var h = '';
+  if (AD.step === 'setpin' || AD.step === 'pin') {
+    h += '<p class="note">' + (AD.step === 'setpin' ? 'First time here: choose a PIN of 4 to 8 digits. Only you will know it. Driver phone numbers stay behind this PIN.' : 'Enter your owner PIN.') + '</p>' +
+      '<div class="field"><label class="label" for="adPin">Owner PIN</label><input type="password" id="adPin" inputmode="numeric" maxlength="8" autocomplete="off"></div>';
+    if (AD.err) h += '<p class="err" role="alert">' + esc(AD.err) + '</p>';
+    h += '<button type="button" class="btn" data-act="ad-pin">' + (AD.step === 'setpin' ? 'Save PIN' : 'Open panel') + '</button>';
+  } else {
+    var phones = lsGet('sm-driver-phones', {});
+    h += '<p class="privnote">' + ICON.shield + '<span>Only you see this page. Farmers never receive driver numbers from any screen or API call. Farmers book online or ask for a call-back, and you connect them.</span></p>';
+    if (AD.ok) h += '<p class="ver">' + esc(AD.ok) + '</p>';
+    if (AD.err) h += '<p class="err" role="alert">' + esc(AD.err) + '</p>';
+    h += '<div class="adm-sec"><h3>Driver phone numbers</h3>' + allTrucks().map(function (x) {
+      return '<div class="adm-row"><b>' + esc(x.t.name[0] + ' · ' + x.t.veh[0]) + '</b><span class="small">' + esc(DISTRICTS[x.d][0]) + ' · ' + x.t.cap + ' quintal</span>' +
+        '<div class="pfx"><span class="cc num">+91</span><input type="text" id="ph_' + x.t.id + '" inputmode="numeric" maxlength="10" value="' + esc(phones[x.t.id] || '') + '" placeholder="10-digit mobile"><button type="button" class="btn" data-act="ad-phone" data-v="' + x.t.id + '">Save</button></div></div>';
+    }).join('') + '</div>';
+    h += '<div class="adm-sec"><h3>Add a driver</h3><div class="adm-grid">' +
+      '<div class="field"><label class="label" for="adDist">District</label><select id="adDist">' + Object.keys(DISTRICTS).map(function (d) { return '<option value="' + d + '">' + esc(DISTRICTS[d][0]) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label class="label" for="adName">Driver name</label><input type="text" id="adName" maxlength="40" autocomplete="off"></div>' +
+      '<div class="field"><label class="label" for="adVeh">Vehicle</label><input type="text" id="adVeh" maxlength="30" autocomplete="off" placeholder="Tata Ace"></div>' +
+      '<div class="field"><label class="label" for="adCap">Capacity (quintal)</label><input type="number" id="adCap" inputmode="numeric" min="1" max="40" value="10"></div>' +
+      '<div class="field"><label class="label" for="adPh">Mobile number</label><input type="text" id="adPh" inputmode="numeric" maxlength="10" autocomplete="off"></div></div>' +
+      '<button type="button" class="btn" data-act="ad-add">Add driver</button></div>';
+    var reqs = lsGet('sm-requests', []);
+    h += '<div class="adm-sec"><h3>Booking and call-back requests</h3>' + (reqs.length ? reqs.map(function (r) {
+      var ph = phones[r.truckId];
+      var tk = allTrucks().filter(function (x) { return x.t.id === r.truckId; })[0];
+      var where = r.lat != null ? 'https://www.google.com/maps/search/?api=1&query=' + r.lat + ',' + r.lng : (r.village ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(r.village) : '');
+      return '<div class="adm-row"><b>' + esc(r.kind === 'booking' ? 'Booking ' + r.ref : 'Call-back request') + '</b>' +
+        '<span class="small num">' + esc(new Date(r.at).toLocaleString('en-IN')) + '</span>' +
+        '<span>' + esc(cropName(r.crop) + ' · ' + r.qty + ' quintal → ' + (NAMES[r.to] ? NAMES[r.to][0] : r.to) + ' · ' + inr(r.freight)) + '</span>' +
+        '<span>Driver: ' + esc(tk ? tk.t.name[0] + ' · ' + tk.t.veh[0] : r.truckId) + ' · ' + (ph ? '<a href="tel:+91' + esc(ph) + '">+91 ' + esc(ph) + '</a>' : '<i>no number saved</i>') + '</span>' +
+        '<span>Farmer: <a href="tel:' + esc(r.farmer) + '">' + esc(r.farmer) + '</a>' + (r.village ? ' · ' + esc(r.village) : '') + '</span>' +
+        (where ? '<a class="small" href="' + esc(where) + '" target="_blank" rel="noopener noreferrer">Pickup location on Google Maps</a>' : '') + '</div>';
+    }).join('') : '<p class="note">No requests yet. They appear here when a farmer books or asks for a call-back.</p>') + '</div>';
+    h += '<button type="button" class="btn ghost" data-act="ad-lock">Lock panel</button>';
+  }
+  $('#adminBody').innerHTML = h;
+  var f = $('#adPin');
+  if (f && f.focus) f.focus();
+}
+function adminAct(a, v) {
+  function val(id) { var el = document.getElementById(id); return el ? String(el.value).trim() : ''; }
+  var okPhone = /^[6-9]\d{9}$/;
+  if (a === 'ad-pin') {
+    var p = val('adPin').replace(/\D/g, '');
+    if (AD.step === 'setpin') {
+      if (p.length < 4) { AD.err = 'Use 4 to 8 digits.'; renderAdmin(); return; }
+      lsSet('sm-owner-pin', pinHash(p));
+    } else if (pinHash(p) !== lsGet('sm-owner-pin', null)) { AD.err = 'Wrong PIN.'; renderAdmin(); return; }
+    AD.step = 'panel'; AD.err = ''; AD.ok = ''; renderAdmin();
+  } else if (a === 'ad-phone') {
+    var n = val('ph_' + v).replace(/\D/g, '');
+    if (!okPhone.test(n)) { AD.err = 'Enter a valid 10-digit mobile number.'; AD.ok = ''; }
+    else { var ph = lsGet('sm-driver-phones', {}); ph[v] = n; lsSet('sm-driver-phones', ph); AD.ok = 'Number saved.'; AD.err = ''; }
+    renderAdmin();
+  } else if (a === 'ad-add') {
+    var nm = val('adName'), vh = val('adVeh') || 'Pickup', cap = Number(val('adCap')), pn = val('adPh').replace(/\D/g, ''), dist = val('adDist');
+    if (nm.length < 2) { AD.err = 'Enter the driver name.'; AD.ok = ''; renderAdmin(); return; }
+    if (!(cap >= 1 && cap <= 40)) { AD.err = 'Capacity must be 1 to 40 quintal.'; AD.ok = ''; renderAdmin(); return; }
+    if (!okPhone.test(pn)) { AD.err = 'Enter a valid 10-digit mobile number.'; AD.ok = ''; renderAdmin(); return; }
+    var id = 'x' + Date.now().toString(36);
+    var rec = { id: id, district: dist, name: nm, veh: vh, cap: cap, km: 3.5, f: 0.95 };
+    var ex = lsGet('sm-extra-trucks', []); ex.push(rec); lsSet('sm-extra-trucks', ex);
+    TRUCKS[dist].push({ id: id, name: [nm, nm], veh: [vh, vh], cap: cap, km: 3.5, f: 0.95 });
+    var ph2 = lsGet('sm-driver-phones', {}); ph2[id] = pn; lsSet('sm-driver-phones', ph2);
+    AD.ok = 'Driver added. Farmers see the name and vehicle, never the number.'; AD.err = '';
+    renderAdmin();
+    if (state.tab === 'trucks') renderView();
+  } else if (a === 'ad-lock') { AD.step = 'pin'; AD.err = ''; AD.ok = ''; renderAdmin(); }
+}
+document.addEventListener('keydown', function (e) {
+  if (!AD.open) return;
+  if (e.key === 'Escape') closeAdmin();
+  else if (e.key === 'Enter' && e.target && e.target.id === 'adPin') { e.preventDefault(); adminAct('ad-pin'); }
+});
+$('#admin').addEventListener('click', function (e) { if (e.target === this) closeAdmin(); });
+
+document.addEventListener('input', function (e) {
+  if (!LG.open || !e.target) return;
+  if (e.target.id === 'lgId') { if (LG.method === 'phone') LG.phone = e.target.value; else LG.email = e.target.value; }
+  else if (e.target.id === 'lgCode') { LG.code = e.target.value; }
+  else if (e.target.id === 'lgVillage') { LG.village = e.target.value; }
+});
+document.addEventListener('keydown', function (e) {
+  if (!LG.open) return;
+  if (e.key === 'Escape') { closeLogin(); return; }
+  if (e.key === 'Enter' && e.target && e.target.matches && e.target.matches('#loginBody input')) {
+    e.preventDefault();
+    var pb = $('#loginBody [data-primary]');
+    if (pb && !pb.disabled) pb.click();
+    return;
+  }
+  if (e.key === 'Tab') {
+    var nodes = Array.prototype.filter.call($('#login').querySelectorAll('button, input'), function (x) { return !x.disabled && x.offsetParent !== null; });
+    if (!nodes.length) return;
+    var first = nodes[0], last = nodes[nodes.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+$('#login').addEventListener('click', function (e) { if (e.target === this) closeLogin(); });
+
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('[data-act]');
+  if (!b) return;
+  var a = b.dataset.act, v = b.dataset.v;
+  if (a === 'lang') { state.lang = v; try { localStorage.setItem('sm-lang', v); } catch (_) {} applyStatic(); say(''); renderAll(); }
+  else if (a === 'crop') {
+    $('#q').value = ''; say(''); setCrop(v);
+    if (window.innerWidth < 860) {
+      var calm2 = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var rt = $('#rates');
+      if (rt && rt.scrollIntoView) rt.scrollIntoView({ behavior: calm2 ? 'auto' : 'smooth', block: 'nearest' });
+    }
+  }
+  else if (a === 'tab') { state.tab = v; renderTabs(); renderView(); }
+  else if (a === 'qminus') stepQty(-1);
+  else if (a === 'qplus') stepQty(1);
+  else if (a === 'unit') setUnit(v);
+  else if (a === 'mic') startVoice();
+  else if (a === 'book') { state.dest = v; state.truck = null; resetBooking(); goTrucks(); }
+  else if (a === 'pick') { if (b.getAttribute('aria-disabled') !== 'true') { state.truck = v; state.called = false; renderView(); } }
+  else if (a === 'confirm') {
+    requireLogin(function () {
+      var trk = state.lastTrucks;
+      var q = trk && trk.trucks.filter(function (x) { return x.id === state.truck; })[0];
+      if (!q) { renderView(); return; }
+      API.createBooking({ farmer_id: state.user.id, pickup_village: state.village || null, crop: state.crop, district: state.district, to: state.lastDest, quantity_quintals: state.qty, truck_id: q.id, share: state.share }).then(function (res) {
+        state.booked = res.booking; var bk = res.booking; logOwner('booking', { ref: bk.ref, crop: bk.crop, to: bk.to, qty: bk.quantity_quintals, truckId: bk.truck.id, district: bk.district, freight: bk.freight_total }); renderView();
+      });
+    });
+  }
+  else if (a === 'call') {
+    requireLogin(function () {
+      var tk = state.lastTrucks, sc = tk && tk.trucks.filter(function (x) { return x.id === state.truck; })[0];
+      if (sc) logOwner('callback', { ref: '', crop: state.crop, to: state.lastDest, qty: state.qty, truckId: sc.id, district: state.district, freight: sc.freight_total });
+      state.called = true; state.copied = false; renderView();
+    });
+  }
+  else if (a === 'copy') {
+    var ph = $('.phone');
+    if (!ph) return;
+    var txt = ph.textContent;
+    try {
+      navigator.clipboard.writeText(txt).then(function () { state.copied = true; renderView(); }, function () {
+        var rg = document.createRange(); rg.selectNodeContents(ph); var s = window.getSelection(); s.removeAllRanges(); s.addRange(rg);
+      });
+    } catch (_) {
+      var rg2 = document.createRange(); rg2.selectNodeContents(ph); var s2 = window.getSelection(); s2.removeAllRanges(); s2.addRange(rg2);
+    }
+  }
+  else if (a === 'rebook') { resetBooking(); renderView(); }
+  else if (a === 'mkt') { state.openMarket = state.openMarket === v ? null : v; renderRates(); }
+  else if (a === 'admin-open') openAdmin();
+  else if (a === 'admin-close') closeAdmin();
+  else if (a.indexOf('ad-') === 0) adminAct(a, v);
+  else if (a === 'gps') railGps();
+  else if (a === 'lg-gps') lgGps();
+  else if (a === 'lg-loc') lgLocDone();
+  else if (a === 'cat') { state.cat = v; renderChips(); }
+  else if (a === 'rmap') { state.mapMkt = v; renderView(); }
+  else if (a === 'ctype') { state.colType = v; renderView(); }
+  else if (a === 'ccity') { state.colCity = v; renderView(); }
+  else if (a === 'login-open') openLogin(null);
+  else if (a === 'login-close') closeLogin();
+  else if (a === 'logout') signOut();
+  else if (a === 'lg-method') { LG.method = v; LG.error = ''; renderLogin(); }
+  else if (a === 'lg-send') lgSend();
+  else if (a === 'lg-verify') lgVerify();
+  else if (a === 'lg-change') { LG.step = 'id'; LG.error = ''; LG.code = ''; renderLogin(); }
+  else if (a === 'lg-resend') { LG.step = 'id'; lgSend(); }
+  else if (a === 'district') setDistrict(v);
+  else if (a === 'btype') { state.buyerType = v; renderView(); }
+  else if (a === 'offer') {
+    requireLogin(function () {
+      API.createOffer({ farmer_id: state.user.id, buyer_id: v, crop: state.crop, quantity_quintals: state.qty }).then(function () { state.offered[v] = true; renderView(); });
+    });
+  }
+});
+document.addEventListener('keydown', function (e) {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.tk[data-act="pick"]')) { e.preventDefault(); e.target.click(); }
+});
+$('#qty').addEventListener('input', function () { var n = Number(this.value); var mul = state.unit === 'kg' ? 0.01 : 1; if (n * mul >= 0.1) setQty(n, true); });
+$('#qty').addEventListener('change', function () { setQty(this.value); });
+$('#share').addEventListener('change', function () { state.share = this.checked; state.truck = null; resetBooking(); renderView(); });
+$('#q').addEventListener('input', function () {
+  var v = this.value.trim();
+  if (!v) { say(''); return; }
+  var id = matchCrop(v);
+  if (id && cropsHere().indexOf(id) >= 0) { say(t('vSelected', { c: cropName(id) })); if (id !== state.crop) setCrop(id); } else if (id) { say(t('vNotHere', { c: cropName(id), d: distName() })); } else { say(t('vNone')); }
+});
+document.addEventListener('change', function (e) {
+  if (e.target && e.target.id === 'dest') { state.dest = e.target.value; state.truck = null; resetBooking(); renderView(); }
+});
+
+try { var saved = localStorage.getItem('sm-lang'); if (saved === 'te' || saved === 'en') state.lang = saved; } catch (_) {}
+function loadVillage() {
+  try { var v = localStorage.getItem('sm-village'); if (v) { state.village = v.slice(0, 60); $('#village').value = state.village; } } catch (_) {}
+}
+var villageTimer = null;
+$('#village').addEventListener('input', function () {
+  state.village = this.value.trim().slice(0, 60);
+  try { localStorage.setItem('sm-village', state.village); } catch (_) {}
+  if (state.loc && state.loc.gps) { state.loc.gps = false; saveLoc(); gstat(t('gpsOff')); }
+  refreshMapLinks();
+  if (state.tab === 'trucks' && !state.booked) {
+    clearTimeout(villageTimer);
+    villageTimer = setTimeout(renderView, 400);
+  }
+});
+loadExtraTrucks();
+loadUser();
+loadVillage();
+loadLoc();
+if (state.loc && state.loc.label && !state.village) { state.village = state.loc.label; $('#village').value = state.village; }
+applyStatic();
+renderAll();
+if (gpsPt()) gstat(t('gpsGot'));
+</script>
+
+</body></html>
